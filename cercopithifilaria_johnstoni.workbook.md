@@ -50,4 +50,13 @@ done
 for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
 cd ${i}_RM_OUT ; bsub.py --threads 7 10 03_RM_mask  "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatMasker/RepeatMasker -e ncbi -pa 7 -s -dir ./ -small -gff -lib RM_*/consensi.fa.classified ../genomes/${i}.fa"; cd .. ;
 done
-``` 
+```
+
+### collate output
+```
+> summary.data
+for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
+echo ${i} >> summary.data;
+cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e ^"DNA" -e ^"Unclassified" -e ^"Total" -e ^"Simple" -e ^"Low" -e ^"Small" -e ^"Satellites" >> summary.data;
+done
+```
