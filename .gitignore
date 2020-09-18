@@ -1,3 +1,4 @@
-
+ 
 02_data/*
+!02_data/cjohnstoni_genome_200917.fasta
 !02_data/README.md
