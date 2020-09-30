@@ -1,5 +1,10 @@
+# Workspace for the Cercopithifilaria johnstoni genome project
 
-# genome scope
+## Authors: 
+Kirsty McCann and Stephen Doyle
+
+
+# Genome Scope
 ```bash
 # trim the reads first - the full length reads are quite error prone
 
