@@ -151,31 +151,6 @@ bsub.py --queue long --threads 30 20 busco11 ~sd21/bash_scripts/run_busco_nemato
 
 
 
-
-## Assembly statistics for filarial nematodes + C. johnstoni
-```
-cd miniconda3/bin/
-
-#---New C. johnstoni genome assembly used
-#---nematode genome versions recorded
-
-assembly-stats /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
-assembly-stats /home/kirstmac/Documents/whole-genomes/acanthocheilonema_viteae.PRJEB1697.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_malayi.PRJNA10729.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_pahangi.PRJEB497.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_timori.PRJEB4663.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/dirofilaria_immitis.PRJEB1797.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/litomosoides_sigmodontis.PRJEB3075.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/loa_loa.PRJNA246086.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_flexuosa.PRJEB512.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_ochengi.PRJEB1204.WBPS13.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_volvulus.PRJEB513.WBPS14.genomic.fa
-assembly-stats /home/kirstmac/Documents/whole-genomes/wuchereria_bancrofti.PRJEB536.WBPS13.genomic.fa
-
-```
-
-
-
 ## AUGUSTUS
 ```bash
 /software/pathogen/external/apps/usr/bin/splitMfasta.pl HAEM_V3.3.chr.fa --outputpath=./
@@ -280,6 +255,61 @@ echo ${i} >> summary.data;
 cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e ^"DNA" -e ^"Unclassified" -e ^"Total" -e ^"Simple" -e ^"Low" -e ^"Small" -e ^"Satellites" >> summary.data;
 done
 ```
+
+
+#---------------------------------------------------------------------------------------------------------------------
+
+
+
+# Assembly statistics for filarial nematodes + C. johnstoni
+```
+cd miniconda3/bin/
+
+#---New C. johnstoni genome assembly used
+#---nematode genome versions recorded
+
+assembly-stats /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+assembly-stats /home/kirstmac/Documents/whole-genomes/acanthocheilonema_viteae.PRJEB1697.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_malayi.PRJNA10729.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_pahangi.PRJEB497.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/brugia_timori.PRJEB4663.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/dirofilaria_immitis.PRJEB1797.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/litomosoides_sigmodontis.PRJEB3075.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/loa_loa.PRJNA246086.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_flexuosa.PRJEB512.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_ochengi.PRJEB1204.WBPS13.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/onchocerca_volvulus.PRJEB513.WBPS14.genomic.fa
+assembly-stats /home/kirstmac/Documents/whole-genomes/wuchereria_bancrofti.PRJEB536.WBPS13.genomic.fa
+
+```
+
+
+#---------------------------------------------------------------------------------------------------------------------
+
+# Filarial nematode BUSCO analyses whole genomes
+
+```
+cd /Documents/Programs/busco-master
+
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_pahangi.PRJEB497.WBPS13.genomic.fa -o B_pahangi_Busco -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_timori.PRJEB4663.WBPS13.genomic.fa -o B_timori_Busco -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/acanthocheilonema_viteae.PRJEB1697.WBPS13.genomic.fa -o A_viteae_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_malayi.PRJNA10729.WBPS13.genomic.fa -o B_malayi_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/dirofilaria_immitis.PRJEB1797.WBPS13.genomic.fa -o D_immitis_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/litomosoides_sigmodontis.PRJEB3075.WBPS13.genomic.fa -o L_sigmodontis_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/loa_loa.PRJNA246086.WBPS13.genomic.fa -o L_loa_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_flexuosa.PRJEB512.WBPS13.genomic.fa -o O_flexuosa_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_ochengi.PRJEB1204.WBPS13.genomic.fa -o O_ochengi_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_volvulus.PRJEB513.WBPS14.genomic.fa -o O_volvulus_BUSCO -l nematoda_odb9/ -m geno
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/wuchereria_bancrofti.PRJEB536.WBPS13.genomic.fa -o W_bancrofti_BUSCO -l nematoda_odb9/ -m geno
+
+
+#---just noticed I have used a different version of Wb, Ls and Of genomes for all my analyses than what you have Steve. Will amend these and adjust notes when I have.
+
+```
+
+
+#---------------------------------------------------------------------------------------------------------------------
 
 
 
