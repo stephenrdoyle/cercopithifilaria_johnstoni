@@ -251,3 +251,12 @@ echo ${i} >> summary.data;
 cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e ^"DNA" -e ^"Unclassified" -e ^"Total" -e ^"Simple" -e ^"Low" -e ^"Small" -e ^"Satellites" >> summary.data;
 done
 ```
+
+
+module load tetools/1.1-c3
+
+BuildDatabase -name CJ cjohnstoni_genome_200917.fasta
+
+RepeatModeler -pa 20 -engine ncbi -database CJ
+
+RepeatMasker -e ncbi -pa 7 -s -dir ./ -small -gff -lib RM_11168.FriSep250900502020/consensi.fa.classified cjohnstoni_genome_200917.fasta
