@@ -150,11 +150,14 @@ bsub.py --queue long --threads 30 20 busco11 ~sd21/bash_scripts/run_busco_nemato
 ```
 
 
+
+
 ## Assembly statistics for filarial nematodes + C. johnstoni
 ```
 cd miniconda3/bin/
 
-#New C. johnstoni genome assembly used#
+#---New C. johnstoni genome assembly used
+#---nematode genome versions recorded
 
 assembly-stats /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
 assembly-stats /home/kirstmac/Documents/whole-genomes/acanthocheilonema_viteae.PRJEB1697.WBPS13.genomic.fa
@@ -278,16 +281,50 @@ cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e
 done
 ```
 
+
+
+# BUSCO for new CJ proteome and filarial nematode proteomes
+```
+
+cd /Documents/Programs/busco-master
+
+#---using the new CJ genome annotation that was trained using BUSCO
+
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/200920_CJ_BUSCO.fa -o CJ_BUSCOtrained-assembly -l nematoda_odb9/ -m prot
+
+#---then running the same analysis on the remaining filarial nematodes to compare CJ against
+#---note that all the nematode protein files are from the same genome versions used from assembly statistics and all other analyses
+
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/A_viteae.fa -o Av-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/B_malayi.fa -o Bm-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/B_pahangi.fa -o Bp-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/B_timori.fa -o Bt-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/D_immitis.fa -o Di-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/L_loa.fa -o Ll-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/L_sigmodontis.fa -o Ls-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/O_flexuosa.fasta -o Of-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/O_ochengi.fasta -o Oc-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/O_volvulus.fasta -o Ov-proteins -l nematoda_odb9/ -m prot
+python scripts/run_BUSCO.py -i /home/kirstmac/Documents/Files/Proteins/W_bancrofti.fa -o Wb-proteins -l nematoda_odb9/ -m prot
+
+```
+
+
 #---------------------------------------------------------------------------------------------------------------------
 
 # 12S-COI phylogeny
 ```
+
 module load raxml-gcc/8.0.19
 
 echo "Starting at $(date)"
 raxmlHPC -s 20-09-30_12S-COI_alignment_reducedoutgroups_gb.phy -n 20-09-30_12SCOI_reducedoutgroups_best -m GTRCAT -p 6 -T 2 -# 20
 raxmlHPC -s 20-09-30_12S-COI_alignment_reducedoutgroups_gb.phy -n 20-09-30_12SCOI_reducedoutgroups.bootall -m GTRCAT -p 6 -b 6 -T 2 -# 1000
 
-#combine bootstrap with best 12S-COI tree
+#---combine bootstrap with best 12S-COI tree
 
 >raxmlHPC.exe -f b -t D:\PhDanalyses2\C_johnstoni_analyses\Cercopithifilaria_genes\201001_reduced_gblocks_tree\RAxML_result.20-09-30_12SCOI_reducedoutgroups_best.RUN.6 -z D:\PhDanalyses2\C_johnstoni_analyses\Cercopithifilaria_genes\201001_reduced_gblocks_tree\RAxML_bootstrap.20-09-30_12SCOI_reducedoutgroups.bootall -m GTRCAT -n CJ_12S-COI_reduced.bipart
+
+```
+
+
