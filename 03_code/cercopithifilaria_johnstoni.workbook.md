@@ -424,3 +424,23 @@ bedtools nuc -fi /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-mast
 
 #---Combine the GC analysis with the coverage analysis
 Paste GCcontent_201007.txt coverage_10K_201007_V3.txt > GC_COV_201007.txt
+
+
+
+
+
+# extract promer hits linking Cj and Ov sequences
+show-coords -lTH CJv2_OV.delta | awk '{print $15,$14}' OFS="\t" | sort | uniq -c | sort -k2,2 -k1,1nr | awk '!seen[$2]++ {print $2,$3}' OFS="\t" > cj_ov_promer.hits
+
+# make a new file to output to
+>cj_ov_promer.complete.hits
+
+# make of list of Cj scaffolds in the reference, check to see if they are in the promer output - if yes, print the Cj-Ov promer hit, if no, print the Cj name and that there was no hit
+samtools dict scaffolds.reduced.fa |\
+	cut -f2,3 |\
+	awk -F'[\t:]' '$1=="SN" {print $2}' OFS="\t" |\
+	sort | uniq |\
+	while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then grep ${NAME} cj_ov_promer.hits >> cj_ov_promer.complete.hits; else echo -e ${NAME}\\t"no_hit" >> cj_ov_promer.complete.hits; fi; done
+	
+	
+samtools dict scaffolds.reduced.fa |cut -f2,3 |awk -F'[\t:]' '$1=="SN" {print $2}' OFS="\t" |sort | uniq | while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then echo found; else echo notfound; fi;  done
