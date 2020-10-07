@@ -442,5 +442,3 @@ samtools dict scaffolds.reduced.fa |\
 	sort | uniq |\
 	while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then grep ${NAME} cj_ov_promer.hits >> cj_ov_promer.complete.hits; else echo -e ${NAME}\\t"no_hit" >> cj_ov_promer.complete.hits; fi; done
 	
-	
-samtools dict scaffolds.reduced.fa |cut -f2,3 |awk -F'[\t:]' '$1=="SN" {print $2}' OFS="\t" |sort | uniq | while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then echo found; else echo notfound; fi;  done
