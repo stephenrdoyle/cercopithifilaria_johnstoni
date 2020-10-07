@@ -358,3 +358,69 @@ raxmlHPC -s 20-09-30_12S-COI_alignment_reducedoutgroups_gb.phy -n 20-09-30_12SCO
 ```
 
 
+#---------------------------------------------------------------------------------------------------------------------
+
+# Circos plot
+```
+#---Running analysis on the linux system (ASUS) - the HPC not set up properly
+#---run PROMER
+
+cd Documents/Programs/MUMmer3.23/
+./promer --mum --prefix CJv2_OV O_volvulus_chromosomes.fa /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+	
+#---run SHOW COORDS
+./show-coords -dTlro -L 100 CJv2_OV.delta > CJv2_OV.coords
+
+#---use NUCMER.2.CIRCOS to create the circos files
+perl Nucmer.2.circos.pl --promer --ref_order=relw --parse_contig_names --coord-file /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/Updated-promer-CJv2_OV/CJv2_OV.coords --label_size=20 --min_chr_len=10000 --min_hit_len=1000 --ribbons --no_query_labels --min_ID=80 --query_order=rel --min_query_chr_len=50000 --flipquery
+
+#---amend the housekeeping.conf for analysis to run
+#---files that need to be in the working directory:
+	circos.conf
+		#---edited this by removing the etc/ from etc/housekeeping.conf
+	karyotype.txt
+	links.txt
+	housekeeping.conf
+		#---editing the
+			max_ticks            = 5000
+			max_ideograms        = 550
+			max_links            = 200000
+			max_points_per_track = 300000
+	
+module load circos/0.67_5
+circos
+
+```
+#---------------------------------------------------------------------------------------------------------------------
+
+# GC vs Coverage plot
+```
+
+#---mapping reads to the updated CJ genome
+#---index the genome
+bwa index /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+bwa mem /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta /home/kirstmac/Documents/Files/cj_paired_R1.fastq /home/kirstmac/Documents/Files/cj_paired_R2.fastq > CJraw_mapped_201004.sam
+
+#---sort the file for use in bedtools
+samtools sort CJraw_mapped_201004.sam > CJraw_sorted_201005.bam
+
+#---index the genome
+samtools faidx /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+
+#---cut the first two columns from the index file - contig name and length - for bedtools to make windows
+cut -f1,2 cjohnstoni_genome_200917.fasta.fai > CJ.genome
+
+#---make windows - choosing 10000
+bedtools makewindows -g CJ.genome -w 10000 > CJ_genome_10k.bed
+
+#---Run bedtools coverage to determine the coverage of CJ reads
+#---SUPER IMPORTANT - version bedtools-gcc/2.20.1 - works when running the following command. Version 2.26.0 does not work. Most likely because the commands have switched around but not clear why they don't produce the same output.
+    
+bedtools coverage -b CJ_genome_10K.bed -abam CJraw_sorted_201005.bam > coverage_10k_201007_V3.txt
+
+#---GC content using bedtools nuc tools
+
+bedtools nuc -fi /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta -bed /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/CJ_genome_10K.bed > GCcontent_201007.txt
+
+#---Combine the GC analysis with the coverage analysis
+Paste GCcontent_201007.txt coverage_10K_201007_V3.txt > GC_COV_201007.txt
