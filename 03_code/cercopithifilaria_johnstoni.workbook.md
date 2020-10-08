@@ -472,6 +472,7 @@ SS <- ggplot() + geom_point(data = A,
   labs(y = "Coverage (read depth)", x = "GC content (%)") + 
   labs(color = "O_volvulus chromosomes")
 
+```
 SS 
 ![Chromosome Figure](04_analysis/GCcov_plot_20-10-08.png)
 
