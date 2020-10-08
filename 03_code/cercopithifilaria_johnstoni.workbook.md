@@ -394,7 +394,7 @@ circos
 #---------------------------------------------------------------------------------------------------------------------
 
 # GC vs Coverage plot
-```
+```bash
 
 #---mapping reads to the updated CJ genome
 #---index the genome
@@ -453,8 +453,9 @@ samtools dict scaffolds.reduced.fa |\
 	
 	
 paste GCcontent_201007_new.txt coverage_new_201007.txt cj_ov_promer.complete.hits > NEW_GC_COV_201007.txt
+```
 
-
+```R
 #---R script
 
 library(ggplot2)
