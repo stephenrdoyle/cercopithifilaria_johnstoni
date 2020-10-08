@@ -477,7 +477,20 @@ SS <- ggplot() + geom_point(data = A,
 SS 
 ![Chromosome Figure](../04_analysis/GCcov_plot_20-10-08.png)
 
+```
+#---plot generated with the log scale, log10
 
+LOG <- ggplot() + geom_point(data = A,
+                            aes(x = GC, 
+                                y = log10(COV/150),
+                                color = chromosome), size = 1.5) + 
+  ylim(-2,4) +
+  xlim(0.5,0.95) +
+  labs(y = "Coverage log10 (read depth)", x = "GC content (%)") + 
+  labs(color = "O_volvulus chromosomes")
 
+```
+LOG
+![Chromosome Figure](../04_analysis/GCcov_plot_log10_201008.png)
 
 
