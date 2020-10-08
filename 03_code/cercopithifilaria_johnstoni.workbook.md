@@ -407,6 +407,8 @@ samtools sort CJraw_mapped_201004.sam > CJraw_sorted_201005.bam
 #---index the genome
 samtools faidx /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
 
+#---move to new code for full scaffolds if required
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 #---cut the first two columns from the index file - contig name and length - for bedtools to make windows
 cut -f1,2 cjohnstoni_genome_200917.fasta.fai > CJ.genome
 
@@ -424,9 +426,16 @@ bedtools nuc -fi /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-mast
 
 #---Combine the GC analysis with the coverage analysis
 Paste GCcontent_201007.txt coverage_10K_201007_V3.txt > GC_COV_201007.txt
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#---windows of 10000 did not work needed to have the entire scaffolds
+#---new code for full scaffolds
 
+samtools dict cjohnstoni_genome_200917.fasta | cut -f2,3 | awk -F'[\t:]' '$1=="SN" {print $2,"1",$4}' OFS="\t" > CJgenome_new.bed
 
+bedtools coverage -b CJgenome_new.bed -abam CJraw_sorted_201005.bam > coverage_new_201007.txt
+
+bedtools nuc -fi cjohnstoni_genome_200917.fasta -bed CJgenome_new.bed > GCcontent_201007_new.txt
 
 
 # extract promer hits linking Cj and Ov sequences
@@ -442,3 +451,31 @@ samtools dict scaffolds.reduced.fa |\
 	sort | uniq |\
 	while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then grep ${NAME} cj_ov_promer.hits >> cj_ov_promer.complete.hits; else echo -e ${NAME}\\t"no_hit" >> cj_ov_promer.complete.hits; fi; done
 	
+	
+paste GCcontent_201007_new.txt coverage_new_201007.txt cj_ov_promer.complete.hits > NEW_GC_COV_201007.txt
+
+
+#---R script
+
+library(ggplot2)
+
+A <- read.csv(file="D://PhDanalyses2//C_johnstoni_analyses//whole_genome//20-10-07_updated_GCcov//NEW_GC_COV_201007_OVchromdata_MATCHED.csv")
+
+ggplot(A, aes(x=GC, y=COV/150)) + geom_point() + ylim(0,80)
+
+SS <- ggplot() + geom_point(data = A,
+                            aes(x = GC, 
+                                y = COV/150,
+                                color = chromosome), size = 1.5) + 
+  ylim(0,1500) +
+  xlim(0.5,0.9) +
+  labs(y = "Coverage (read depth)", x = "GC content (%)") + 
+  labs(color = "O_volvulus chromosomes")
+
+SS 
+![Chromosome Figure](04_analysis/GCcov_plot_20-10-08.png)
+
+
+
+
+
