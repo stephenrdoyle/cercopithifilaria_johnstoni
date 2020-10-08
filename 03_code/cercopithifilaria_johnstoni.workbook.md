@@ -474,7 +474,7 @@ SS <- ggplot() + geom_point(data = A,
 
 ```
 SS 
-![Chromosome Figure](04_analysis/GCcov_plot_20-10-08.png)
+![Chromosome Figure](../04_analysis/GCcov_plot_20-10-08.png)
 
 
 
