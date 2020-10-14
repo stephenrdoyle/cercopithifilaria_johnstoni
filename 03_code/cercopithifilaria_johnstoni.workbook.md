@@ -487,8 +487,9 @@ samtools dict scaffolds.reduced.fa |\
 paste GCcontent_201007_new.txt coverage_new_201007.txt cj_ov_promer.complete.hits > NEW_GC_COV_201007.txt
 ```
 
-```R
+```
 #---R script
+#--GC coverage plot coloured by O. volvulus chromosomes
 
 library(ggplot2)
 
@@ -541,4 +542,29 @@ CHROM <- ggplot() + geom_point(data = A,
 ```
 CHROM
 ![Chromosome Figure](../04_analysis/seperate_plot_chrom_20-10-08.png)
+
+
+```
+#---GC coverage plot coloured by B. malayi
+
+B <- read.csv(file="D://PhDanalyses2//C_johnstoni_analyses//whole_genome//20-10-14_GCcov_BM_circos//NEW_GC_COV_201014_BMchromdata_2.csv")
+
+CHROM <- ggplot() + geom_point(data = B,
+                             aes(x = GC, 
+                                 y = log10(COV/150),
+                                 color = chromosome), size = 1.5) + 
+  facet_grid(chromosome ~.) +
+  ylim(-2,4) +
+  xlim(0.5,0.95) +
+  labs(y = "Coverage log10 (read depth)", x = "GC content (%)") + 
+  labs(color = "B_malayi chromosomes")
+
+```
+CHROM
+![Chromosome Figure](../04_analysis/GCcov_plot_CJBM_20-10-14.png)
+
+```
+
+
+
 
