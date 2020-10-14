@@ -391,6 +391,16 @@ module load circos/0.67_5
 circos
 
 ```
+![Chromosome Figure](../04_analysis/CJOV_circos_coloured-by-X.png)
+
+```
+#---B_malayi and Cjohnstoni circos plot
+
+```
+![Chromosome Figure](../04_analysis/CJBM_circos_coloured-by-X.png)
+
+
+
 #---------------------------------------------------------------------------------------------------------------------
 
 # GC vs Coverage plot
