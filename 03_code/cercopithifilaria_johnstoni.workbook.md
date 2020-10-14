@@ -396,6 +396,28 @@ circos
 ```
 #---B_malayi and Cjohnstoni circos plot
 
+./promer --mum --prefix CJv2_BM brugia_malayi.PRJNA10729.WBPS13.genomic.fa /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+
+./show-coords -dTlro -L 100 CJv2_BM.delta > CJv2_BM.coords
+
+perl Nucmer.2.circos.pl  --promer --ref_order=relw --parse_contig_names --coord-file CJv2_BM.coords --label_size=20 --min_chr_len=10000 --min_hit_len=1000 --ribbons --no_query_labels --min_ID=80 --query_order=rel --min_query_chr_len=50000 --flipquery
+
+#---amend the housekeeping.conf for analysis to run
+#---files that need to be in the working directory:
+	circos.conf
+		#---edited this by removing the etc/ from etc/housekeeping.conf
+	karyotype.txt
+	links.txt
+	housekeeping.conf
+		#---editing the
+			max_ticks            = 5000
+			max_ideograms        = 550
+			max_links            = 200000
+			max_points_per_track = 300000
+	
+module load circos/0.67_5
+circos
+
 ```
 ![Chromosome Figure](../04_analysis/CJBM_circos_coloured-by-X.png)
 
