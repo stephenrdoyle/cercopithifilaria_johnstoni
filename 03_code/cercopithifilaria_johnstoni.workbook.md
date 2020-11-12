@@ -1,6 +1,6 @@
 # Workspace for the Cercopithifilaria johnstoni genome project
 
-## Authors: 
+## Authors:
 Kirsty McCann and Stephen Doyle
 
 
@@ -367,4 +367,244 @@ raxmlHPC -s 20-09-30_12S-COI_alignment_reducedoutgroups_gb.phy -n 20-09-30_12SCO
 ```
 
 
+<<<<<<< HEAD
 >>>>>>> a1be7b7c631cea91cc58aa5a7243e8d913e35c4a
+=======
+#---------------------------------------------------------------------------------------------------------------------
+
+# Circos plot
+```
+#---Running analysis on the linux system (ASUS) - the HPC not set up properly
+#---run PROMER
+
+cd Documents/Programs/MUMmer3.23/
+./promer --mum --prefix CJv2_OV O_volvulus_chromosomes.fa /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+
+#---run SHOW COORDS
+./show-coords -dTlro -L 100 CJv2_OV.delta > CJv2_OV.coords
+
+#---use NUCMER.2.CIRCOS to create the circos files
+perl Nucmer.2.circos.pl --promer --ref_order=relw --parse_contig_names --coord-file /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/Updated-promer-CJv2_OV/CJv2_OV.coords --label_size=20 --min_chr_len=10000 --min_hit_len=1000 --ribbons --no_query_labels --min_ID=80 --query_order=rel --min_query_chr_len=50000 --flipquery
+
+#---amend the housekeeping.conf for analysis to run
+#---files that need to be in the working directory:
+	circos.conf
+		#---edited this by removing the etc/ from etc/housekeeping.conf
+	karyotype.txt
+	links.txt
+	housekeeping.conf
+		#---editing the
+			max_ticks            = 5000
+			max_ideograms        = 550
+			max_links            = 200000
+			max_points_per_track = 300000
+
+module load circos/0.67_5
+circos
+
+```
+![Chromosome Figure](../04_analysis/CJOV_circos_coloured-by-X.png)
+
+```
+#---B_malayi and Cjohnstoni circos plot
+
+./promer --mum --prefix CJv2_BM brugia_malayi.PRJNA10729.WBPS13.genomic.fa /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+
+./show-coords -dTlro -L 100 CJv2_BM.delta > CJv2_BM.coords
+
+perl Nucmer.2.circos.pl  --promer --ref_order=relw --parse_contig_names --coord-file CJv2_BM.coords --label_size=20 --min_chr_len=10000 --min_hit_len=1000 --ribbons --no_query_labels --min_ID=80 --query_order=rel --min_query_chr_len=50000 --flipquery
+
+#---amend the housekeeping.conf for analysis to run
+#---files that need to be in the working directory:
+	circos.conf
+		#---edited this by removing the etc/ from etc/housekeeping.conf
+	karyotype.txt
+	links.txt
+	housekeeping.conf
+		#---editing the
+			max_ticks            = 5000
+			max_ideograms        = 550
+			max_links            = 200000
+			max_points_per_track = 300000
+
+module load circos/0.67_5
+circos
+
+```
+![Chromosome Figure](../04_analysis/CJBM_circos_coloured-by-X.png)
+
+
+
+#---------------------------------------------------------------------------------------------------------------------
+
+# GC vs Coverage plot
+```bash
+
+#---mapping reads to the updated CJ genome
+#---index the genome
+bwa index /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+bwa mem /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta /home/kirstmac/Documents/Files/cj_paired_R1.fastq /home/kirstmac/Documents/Files/cj_paired_R2.fastq > CJraw_mapped_201004.sam
+
+#---sort the file for use in bedtools
+samtools sort CJraw_mapped_201004.sam > CJraw_sorted_201005.bam
+
+#---index the genome
+samtools faidx /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
+
+#---move to new code for full scaffolds if required
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+#---cut the first two columns from the index file - contig name and length - for bedtools to make windows
+cut -f1,2 cjohnstoni_genome_200917.fasta.fai > CJ.genome
+
+#---make windows - choosing 10000
+bedtools makewindows -g CJ.genome -w 10000 > CJ_genome_10k.bed
+
+#---Run bedtools coverage to determine the coverage of CJ reads
+#---SUPER IMPORTANT - version bedtools-gcc/2.20.1 - works when running the following command. Version 2.26.0 does not work. Most likely because the commands have switched around but not clear why they don't produce the same output.
+
+bedtools coverage -b CJ_genome_10K.bed -abam CJraw_sorted_201005.bam > coverage_10k_201007_V3.txt
+
+#---GC content using bedtools nuc tools
+
+bedtools nuc -fi /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta -bed /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/CJ_genome_10K.bed > GCcontent_201007.txt
+
+#---Combine the GC analysis with the coverage analysis
+Paste GCcontent_201007.txt coverage_10K_201007_V3.txt > GC_COV_201007.txt
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#---windows of 10000 did not work needed to have the entire scaffolds
+#---new code for full scaffolds
+
+samtools dict cjohnstoni_genome_200917.fasta | cut -f2,3 | awk -F'[\t:]' '$1=="SN" {print $2,"1",$4}' OFS="\t" > CJgenome_new.bed
+
+bedtools coverage -b CJgenome_new.bed -abam CJraw_sorted_201005.bam > coverage_new_201007.txt
+
+bedtools nuc -fi cjohnstoni_genome_200917.fasta -bed CJgenome_new.bed > GCcontent_201007_new.txt
+
+
+# extract promer hits linking Cj and Ov sequences
+show-coords -lTH CJv2_OV.delta | awk '{print $15,$14}' OFS="\t" | sort | uniq -c | sort -k2,2 -k1,1nr | awk '!seen[$2]++ {print $2,$3}' OFS="\t" > cj_ov_promer.hits
+
+# make a new file to output to
+>cj_ov_promer.complete.hits
+
+# make of list of Cj scaffolds in the reference, check to see if they are in the promer output - if yes, print the Cj-Ov promer hit, if no, print the Cj name and that there was no hit
+samtools dict scaffolds.reduced.fa |\
+	cut -f2,3 |\
+	awk -F'[\t:]' '$1=="SN" {print $2}' OFS="\t" |\
+	sort | uniq |\
+	while read -r NAME; do if grep -q ${NAME} cj_ov_promer.hits; then grep ${NAME} cj_ov_promer.hits >> cj_ov_promer.complete.hits; else echo -e ${NAME}\\t"no_hit" >> cj_ov_promer.complete.hits; fi; done
+
+
+paste GCcontent_201007_new.txt coverage_new_201007.txt cj_ov_promer.complete.hits > NEW_GC_COV_201007.txt
+```
+
+```
+#---R script
+#--GC coverage plot coloured by O. volvulus chromosomes
+
+library(ggplot2)
+
+A <- read.csv(file="D://PhDanalyses2//C_johnstoni_analyses//whole_genome//20-10-07_updated_GCcov//NEW_GC_COV_201007_OVchromdata_MATCHED.csv")
+
+ggplot(A, aes(x=GC, y=COV/150)) + geom_point() + ylim(0,80)
+
+SS <- ggplot() + geom_point(data = A,
+                            aes(x = GC,
+                                y = COV/150,
+                                color = chromosome), size = 1.5) +
+  ylim(0,1500) +
+  xlim(0.5,0.9) +
+  labs(y = "Coverage (read depth)", x = "GC content (%)") +
+  labs(color = "O_volvulus chromosomes")
+
+```
+SS
+![Chromosome Figure](../04_analysis/GCcov_plot_20-10-08.png)
+
+```
+#---plot generated with the log scale, log10
+
+LOG <- ggplot() + geom_point(data = A,
+                            aes(x = GC,
+                                y = log10(COV/150),
+                                color = chromosome), size = 1.5) +
+  ylim(-2,4) +
+  xlim(0.5,0.95) +
+  labs(y = "Coverage log10 (read depth)", x = "GC content (%)") +
+  labs(color = "O_volvulus chromosomes")
+
+```
+LOG
+![Chromosome Figure](../04_analysis/GCcov_plot_log10_201008.png)
+
+```
+#---seperate chromosome plots
+
+CHROM <- ggplot() + geom_point(data = A,
+                             aes(x = GC,
+                                 y = log10(COV/150),
+                                 color = chromosome), size = 1.5) +
+  facet_grid(chromosome ~.) +
+  ylim(-2,4) +
+  xlim(0.5,0.95) +
+  labs(y = "Coverage log10 (read depth)", x = "GC content (%)") +
+  labs(color = "O_volvulus chromosomes")
+
+```
+CHROM
+![Chromosome Figure](../04_analysis/seperate_plot_chrom_20-10-08.png)
+
+
+```
+#---GC coverage plot coloured by B. malayi
+
+B <- read.csv(file="D://PhDanalyses2//C_johnstoni_analyses//whole_genome//20-10-14_GCcov_BM_circos//NEW_GC_COV_201014_BMchromdata_2.csv")
+
+CHROM <- ggplot() + geom_point(data = B,
+                             aes(x = GC,
+                                 y = log10(COV/150),
+                                 color = chromosome), size = 1.5) +
+  facet_grid(chromosome ~.) +
+  ylim(-2,4) +
+  xlim(0.5,0.95) +
+  labs(y = "Coverage log10 (read depth)", x = "GC content (%)") +
+  labs(color = "B_malayi chromosomes")
+
+```
+CHROM
+![Chromosome Figure](../04_analysis/GCcov_plot_CJBM_20-10-14.png)
+
+```
+
+
+
+
+
+
+```R
+# Library
+library(ggmap)
+
+# For google map, you have to give the center of the window you are looking at.
+# Possibility for the map type argument: terrain / satellite / roadmap / hybrid
+
+# get the map info
+map <- get_googlemap("Australia", zoom = 8, maptype = "terrain")
+
+# Plot it
+ggmap(map) +
+  theme_void() +
+  ggtitle("terrain") +
+  theme(
+    plot.title = element_text(colour = "orange"),
+    panel.border = element_rect(colour = "grey", fill=NA, size=2)
+  )
+
+  us <- c(left = -125, bottom = 25.75, right = -67, top = 49)
+  get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap() 
+
+```
+
+
+>>>>>>> 735b9d98f7a410ccdc01beb98266c3b57d140062
