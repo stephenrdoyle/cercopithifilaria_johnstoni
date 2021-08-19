@@ -602,9 +602,53 @@ ggmap(map) +
   )
 
   us <- c(left = -125, bottom = 25.75, right = -67, top = 49)
-  get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap() 
+  get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap()
 
 ```
 
 
 >>>>>>> 735b9d98f7a410ccdc01beb98266c3b57d140062
+
+
+```bash
+module load seqtk/1.3--ha92aebf_0
+
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/SEQ_STATS
+
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/acanthocheilonema_viteae/PRJEB1697/acanthocheilonema_viteae.PRJEB1697.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/brugia_malayi/PRJNA10729/brugia_malayi.PRJNA10729.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/brugia_pahangi/PRJEB497/brugia_pahangi.PRJEB497.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/brugia_timori/PRJEB4663/brugia_timori.PRJEB4663.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/dirofilaria_immitis/PRJEB1797/dirofilaria_immitis.PRJEB1797.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/loa_loa/PRJNA246086/loa_loa.PRJNA246086.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/litomosoides_sigmodontis/PRJEB3075/litomosoides_sigmodontis.PRJEB3075.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/onchocerca_volvulus/PRJEB513/onchocerca_volvulus.PRJEB513.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/onchocerca_ochengi/PRJEB1204/onchocerca_ochengi.PRJEB1204.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/onchocerca_flexuosa/PRJEB512/onchocerca_flexuosa.PRJEB512.WBPS15.genomic.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS15/species/wuchereria_bancrofti/PRJEB536/wuchereria_bancrofti.PRJEB536.WBPS15.genomic.fa.gz
+
+gunzip *
+
+>data.seqtk_out
+for i in *.fa; do
+     seqtk comp ${i} | sort -k2,2nr | awk -v NAME=${i%.WBPS15.genomic.fa} '{print $1,$2,NAME}' OFS="\t" > ${i}.seqtk_out;
+     done
+
+for i in *.seqtk_out; do
+     SUM=$(cat ${i} | datamash sum 2 );
+     awk -v SUM=${SUM} '{print $1,$2,$3,SUM,$2/SUM}' OFS="\t" ${i} > ${i}.seqtk_out2;
+     done
+
+cat *.seqtk_out2 > data.seqtk_out
+rm *.seqtk_out2
+```
+
+
+```R
+library(tidyverse)
+
+data <- read.table("data.seqtk_out", sep="\t")
+data <- data %>% group_by(V3) %>% mutate(csum = cumsum(V5))
+
+ggplot(data, aes(csum, log10(V2), group=V3, colour = V3)) + geom_point()
+```
