@@ -1,16 +1,19 @@
 # Workspace for the Cercopithifilaria johnstoni genome project
 
 ## Authors:
-Kirsty McCann and Stephen Doyle
+- Kirsty McCann (La Trobe University)
+- Stephen Doyle (Wellcome Sanger Institute, ex LTU)
 
 
 ## genome assembly
-
+- reads were trimmed using Trimmomatic
+     - found that assemblies with full length reads were suboptimal to trimmed reads, trimmed not only for quality by also for length. Given the high coverage, hard trimmed back to 150 bp together with quality trimming was a good compromise and worked well.
+- assembly was performed by Kirsty at La Trobe using Spades with default parameters
 
 
 
 ## genome improvement
-
+- genome improvement performed by Steve at Sanger
 - output of spades (as presented in Kirsty's thesis)
 /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/scaffolds.fasta
 
@@ -229,7 +232,7 @@ export AUGUSTUS_CONFIG_PATH=/nfs/users/nfs_s/sd21/software/augustus-3.2.1/config
 export PATH=$PATH:/nfs/users/nfs_s/sd21/software/augustus-3.2.1/bin/
 
 for i in *.fa; do
-     bsub.py 10 ${i%.WBPS16.genomic.fa}_busco_genome "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.genomic.fa}_genome_nematoda --mode genome --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp --force";
+     bsub.py --queue long 10 ${i%.WBPS16.genomic.fa}_busco_genome "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.genomic.fa}_genome_nematoda --mode genome --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp  --restart";
      done
 
 
@@ -247,6 +250,36 @@ SAMPLE_NAME=Cj3-500-700"
 
 bsub.py 10 FASTQ2CRAM_1 "samtools view -C -o Cj3-500-700.unaligned.cram Cj3-500-700.unaligned.bam"
 ```
+
+
+
+# Prepartion of genome and annotation for ENA submission
+
+```bash
+# convert GFF to EMBL format.
+# using tool "EMBLmyGFF3" from https://github.com/NBISweden/EMBLmyGFF3
+
+EMBLmyGFF3 \
+cercopithifilaria_johnstoni_annotation_SD210906.gff3 \
+cercopithifilaria_johnstoni_genome_SD210906.fasta \
+--data_class STD \
+--accession \
+--topology linear \
+--molecule_type "genomic DNA" \
+--transl_table 5  \
+--species 'Cercopithifilaria johnstoni' \
+--taxonomy INV \
+--locus_tag CJOHNSTONI \
+--project_id PRJEB47283 \
+--author 'Stephen R. Doyle' \
+-o cercopithifilaria_johnstoni_genome_SD210906.embl
+
+
+gzip cercopithifilaria_johnstoni_genome_SD210906.embl
+```
+
+
+
 
 
 
