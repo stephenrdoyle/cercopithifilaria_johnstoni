@@ -25,7 +25,8 @@
 
 
 ### redundans
-```
+```bash
+# using redundans first to identifiy and remove excess haplotypic sequneces
 /nfs/users/nfs_s/sd21/lustre118_link/software/GENOME_IMPROVEMENT/redundans/redundans.py --fasta scaffolds.fasta --outdir REDUNDANS_OUT
 
 ```
@@ -34,8 +35,6 @@
 ```bash
 # get taxdump
 curl -L ftp://ftp.ncbi.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz | tar xzf -
-
-# blast genome
 
 #--- fix reference, and split it into 100 reads per file - this will help speed up the blast
 fastaq to_fasta -l0 scaffolds.reduced.fa scaffolds.reduced.l0.fa
@@ -89,11 +88,12 @@ while read i; do
      samtools faidx scaffolds.reduced.fa ${i} >> scaffolds.reduced.bt_filter.fa;
 done < blobtools_filter_bycov_gt10_byhit.list
 
-     ```
+```
 
 
 
 ### rescaffold with opera
+- 
 ```bash
 # run bowtie to generate a mapping file
 bowtie2-build scaffolds.reduced.bt_filter.fa contigs
@@ -146,9 +146,72 @@ gag.py -f ../../cjohnstoni_genome_200917.fa -g augustus.gff3
 
 ```
 
+### Updating gene IDs in the annotation
 
-## completeness
-- iteratative analysis of genome improvement
+```bash
+#working dir = /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME
+
+gff=cjohnstoni_annotation.210825.gff3
+species_prefix=CJOH_
+
+# copy gff to a tmp file - just to avoid doing something silly like overwriting original
+cat ${gff} | grep -v "#" > ${gff}.tmp
+
+# STEP 1 - generate using IDs for each gene
+# - extract gene name from lines in gff matching gene|GENE
+# - remove surrounding characters
+# - sort by gene ID and remove duplicates
+# - print new gene id (species prefix with 8 digit ID that increases by 10 for each gene), and old gene id
+
+awk -F'[\t;]' '{if($3=="gene" || $3=="GENE") print $9}' ${gff}.tmp | sed -e 's/ID=//g' -e 's/\;//g' | sort -V | uniq | awk -v species_prefix="$species_prefix" '{fmt=species_prefix"%08d\t%s\n"; printf fmt,NR*10,$0}' > genes_renames.list
+
+
+# pasa dependent fix
+cat genes_renames.list | sed 's/gene/mRNA/g' >  mRNA_renames.list
+
+# STEP 2 - replace gene IDs
+# - read new / old gene IDs from above
+# - replace IDs, recognising differences in placement of gene, mRNA, and progeny
+# NOTE: match - equal sign at beginning, followed by one of [.;$] where $ is the end of the line, which is what AUGUSTSUS / BRAKER produce - this might have to be tweaked for other outputs
+# NOTE: eg.  =XXX[. ;]
+
+while read new_gene old_gene; do
+     grep "ID=$old_gene[.;$]" ${gff}.tmp | sed -e "s/=${old_gene}[.]/=${new_gene}\./g" -e "s/=${old_gene}[;]/=${new_gene}\;/g" -e "s/=${old_gene}$/=${new_gene}/g" -e "s/Name=.*$/Name=${new_gene}/g";
+done < genes_renames.list > ${gff%.gff*}.genesrenamed.tmp
+
+
+
+# fix end of line characters
+sed -i 's/;$//g' ${gff%.gff*}.genesrenamed.tmp
+
+
+
+echo "##gff-version 3" > ${species_prefix}.renamed.gff3; cat ${gff%.gff*}.genesrenamed.tmp | sort -k1,1 -k4,4n >> ${species_prefix}.renamed.gff3
+
+# add mtDNA annotation to the end
+cat ${species_prefix}.renamed.gff3 C_johnstoni_mt_annotation.SD210906.gff.tmp > tmp; mv tmp ${species_prefix}.renamed.gff3
+
+# final fix, merging nuclear and mtDNA genomes
+mv CJOH_.renamed.gff3 cercopithifilaria_johnstoni_annotation_SD210906.gff3
+
+cat cjohnstoni_genome_210825.fa C_johnstoni_mt_draft_genome.fasta > cercopithifilaria_johnstoni_genome_SD210906.fasta
+
+# clean up ready for submission to ENA / WBP
+gt gff3 -sort -tidy -retainids cercopithifilaria_johnstoni_annotation_SD210906.gff3 > tmp; mv tmp cercopithifilaria_johnstoni_annotation_SD210906.gff3
+
+grep -v "###" cercopithifilaria_johnstoni_annotation_SD210906.gff3 > tmp ; mv tmp cercopithifilaria_johnstoni_annotation_SD210906.gff3
+```
+
+
+
+
+
+
+
+
+## Assessing genome completeness using BUSCO
+
+### iteratative analysis of genome improvements
 ```bash
 cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/BUSCO
 
@@ -158,47 +221,14 @@ bsub.py --queue long --threads 30 20 busco7 ~sd21/bash_scripts/run_busco_nematod
 bsub.py --queue long --threads 30 20 busco10 ~sd21/bash_scripts/run_busco_nematode.sh OPERA opera.fa
 bsub.py --queue long --threads 30 20 busco11 ~sd21/bash_scripts/run_busco_nematode.sh OPERA_RESCAFFOLD opera_rescaffold.fa
 
-
-
-### BUSCO on proteins
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_volvulus/PRJEB513/onchocerca_volvulus.PRJEB513.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/acanthocheilonema_viteae/PRJEB1697/acanthocheilonema_viteae.PRJEB1697.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_malayi/PRJNA10729/brugia_malayi.PRJNA10729.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_pahangi/PRJEB497/brugia_pahangi.PRJEB497.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_timori/PRJEB4663/brugia_timori.PRJEB4663.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/dirofilaria_immitis/PRJEB1797/dirofilaria_immitis.PRJEB1797.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/loa_loa/PRJNA246086/loa_loa.PRJNA246086.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/litomosoides_sigmodontis/PRJEB3075/litomosoides_sigmodontis.PRJEB3075.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_ochengi/PRJEB1204/onchocerca_ochengi.PRJEB1204.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_flexuosa/PRJNA230512/onchocerca_flexuosa.PRJNA230512.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJEB536/wuchereria_bancrofti.PRJEB536.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJNA275548/wuchereria_bancrofti.PRJNA275548.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/elaeophora_elaphi/PRJEB502/elaeophora_elaphi.PRJEB502.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJNA275548/wuchereria_bancrofti.PRJNA275548.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/setaria_digitata/PRJNA479729/setaria_digitata.PRJNA479729.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_ochengi/PRJEB1465/onchocerca_ochengi.PRJEB1465.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_flexuosa/PRJNA230512/onchocerca_flexuosa.PRJNA230512.WBPS16.protein.fa.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/loa_loa/PRJNA37757/loa_loa.PRJNA37757.WBPS16.protein.fa.gz
-
-gunzip *.gz
-
-
-
-
- for i in *WBPS16.protein.fa; do   bsub.py 10 ${i%.WBPS16.protein.fa}_busco_proteins "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.protein.fa}_proteins_nematoda --mode proteins --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp --force"; done
-
-
-
-
-
-
-
 ```
 
-## Assembly statistics for filarial nematodes + C. johnstoni
-```
+### run BUSCO for genome assemblies
+```bash
 
-cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/SEQ_STATS
+# load req augustus components for BUSCO
+export AUGUSTUS_CONFIG_PATH=/nfs/users/nfs_s/sd21/software/augustus-3.2.1/config
+export PATH=$PATH:/nfs/users/nfs_s/sd21/software/augustus-3.2.1/bin/
 
 wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/acanthocheilonema_viteae/PRJEB1697/acanthocheilonema_viteae.PRJEB1697.WBPS16.genomic.fa.gz
 wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_malayi/PRJNA10729/brugia_malayi.PRJNA10729.WBPS16.genomic.fa.gz
@@ -221,23 +251,56 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species
 
 gunzip *.gz
 
+# run BUSCO, looping over genome fasta files
+for i in *.fa; do
+     bsub.py --queue long 10 ${i%.WBPS16.genomic.fa}_busco_genome "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.genomic.fa}_genome_nematoda --mode genome --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp  --restart";
+     done
+```
 
-# assembly stats
+### Analysis of proteins predicted in the genome vs related species
+```bash
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_volvulus/PRJEB513/onchocerca_volvulus.PRJEB513.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/acanthocheilonema_viteae/PRJEB1697/acanthocheilonema_viteae.PRJEB1697.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_malayi/PRJNA10729/brugia_malayi.PRJNA10729.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_pahangi/PRJEB497/brugia_pahangi.PRJEB497.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/brugia_timori/PRJEB4663/brugia_timori.PRJEB4663.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/dirofilaria_immitis/PRJEB1797/dirofilaria_immitis.PRJEB1797.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/loa_loa/PRJNA246086/loa_loa.PRJNA246086.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/litomosoides_sigmodontis/PRJEB3075/litomosoides_sigmodontis.PRJEB3075.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_ochengi/PRJEB1204/onchocerca_ochengi.PRJEB1204.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_flexuosa/PRJNA230512/onchocerca_flexuosa.PRJNA230512.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJEB536/wuchereria_bancrofti.PRJEB536.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJNA275548/wuchereria_bancrofti.PRJNA275548.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/elaeophora_elaphi/PRJEB502/elaeophora_elaphi.PRJEB502.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/wuchereria_bancrofti/PRJNA275548/wuchereria_bancrofti.PRJNA275548.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/setaria_digitata/PRJNA479729/setaria_digitata.PRJNA479729.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_ochengi/PRJEB1465/onchocerca_ochengi.PRJEB1465.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_flexuosa/PRJNA230512/onchocerca_flexuosa.PRJNA230512.WBPS16.protein.fa.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/loa_loa/PRJNA37757/loa_loa.PRJNA37757.WBPS16.protein.fa.gz
+
+gunzip *.gz
+
+
+# run BUSCO, looping over protein fasta files
+for i in *WBPS16.protein.fa; do   
+     bsub.py 10 ${i%.WBPS16.protein.fa}_busco_proteins "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.protein.fa}_proteins_nematoda --mode proteins --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp --force";
+done
+
+```
+
+## Assembly statistics for filarial nematodes + C. johnstoni
+```bash
+
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/SEQ_STATS
+
+# assembly stats - note, this uses the genome fastas that were downloaded above for the BUSCO analyses
 assembly-stats -t *fa | cut -f 1,2,3,9,10
 
 
 
-# run BUSCO for genome assemblies
-export AUGUSTUS_CONFIG_PATH=/nfs/users/nfs_s/sd21/software/augustus-3.2.1/config
-export PATH=$PATH:/nfs/users/nfs_s/sd21/software/augustus-3.2.1/bin/
-
-for i in *.fa; do
-     bsub.py --queue long 10 ${i%.WBPS16.genomic.fa}_busco_genome "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in ${i} --out ${i%.WBPS16.genomic.fa}_genome_nematoda --mode genome --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp  --restart";
-     done
-
-
 ```
 
+## ENA submission
 ### Preparation of FASTQ reads for ENA submission
 - need to convert from FASTQ to CRAM format
 ```bash
@@ -253,11 +316,12 @@ bsub.py 10 FASTQ2CRAM_1 "samtools view -C -o Cj3-500-700.unaligned.cram Cj3-500-
 
 
 
-# Prepartion of genome and annotation for ENA submission
+### Prepartion of genome and annotation for ENA submission
 
 ```bash
 # convert GFF to EMBL format.
 # using tool "EMBLmyGFF3" from https://github.com/NBISweden/EMBLmyGFF3
+# note the locus tag needed to be preregistered with ENA, which I did via DNA Resease at Sanger.
 
 EMBLmyGFF3 \
 cercopithifilaria_johnstoni_annotation_SD210906.gff3 \
@@ -266,7 +330,7 @@ cercopithifilaria_johnstoni_genome_SD210906.fasta \
 --accession \
 --topology linear \
 --molecule_type "genomic DNA" \
---transl_table 5  \
+--transl_table 1  \
 --species 'Cercopithifilaria johnstoni' \
 --taxonomy INV \
 --locus_tag CJOHNSTONI \
@@ -274,9 +338,17 @@ cercopithifilaria_johnstoni_genome_SD210906.fasta \
 --author 'Stephen R. Doyle' \
 -o cercopithifilaria_johnstoni_genome_SD210906.embl
 
+# fix lineage - wasnt automatically picked by by tool due to the fact that C.johnstoni is a new species and taxon ID not searchable at the time of submission.
+cat  cercopithifilaria_johnstoni_genome_SD210906.embl | sed 's/^OC.*/OC   Eukaryota\; Metazoa\; Ecdysozoa\; Nematoda\; Chromadorea\; Rhabditida;\nOC   Spirurina\; Spiruromorpha\; Filarioidea\; Onchocercidae\; Cercopithifilaria./g' | sed 's/transl_table=5/transl_table=1/g' > tmp; mv tmp cercopithifilaria_johnstoni_genome_SD210906.embl
+
 
 gzip cercopithifilaria_johnstoni_genome_SD210906.embl
+
 ```
+- sent this embl file to Pathogen Informatics for upload to ENA.
+
+
+
 
 
 
@@ -720,83 +792,5 @@ ggmap(map) +
 
   us <- c(left = -125, bottom = 25.75, right = -67, top = 49)
   get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap()
-
-```
-
-
-
-
-
-
-
-
-
-## Updating gene IDs
-
-```
-#working dir = /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME
-
-gff=cjohnstoni_annotation.210825.gff3
-species_prefix=CJOH_
-
-# copy gff to a tmp file - just to avoid doing something silly like overwriting original
-cat ${gff} | grep -v "#" > ${gff}.tmp
-
-# STEP 1 - generate using IDs for each gene
-# - extract gene name from lines in gff matching gene|GENE
-# - remove surrounding characters
-# - sort by gene ID and remove duplicates
-# - print new gene id (species prefix with 8 digit ID that increases by 10 for each gene), and old gene id
-
-awk -F'[\t;]' '{if($3=="gene" || $3=="GENE") print $9}' ${gff}.tmp | sed -e 's/ID=//g' -e 's/\;//g' | sort -V | uniq | awk -v species_prefix="$species_prefix" '{fmt=species_prefix"%08d\t%s\n"; printf fmt,NR*10,$0}' > genes_renames.list
-
-
-# pasa dependent fix
-cat genes_renames.list | sed 's/gene/mRNA/g' >  mRNA_renames.list
-
-# STEP 2 - replace gene IDs
-# - read new / old gene IDs from above
-# - replace IDs, recognising differences in placement of gene, mRNA, and progeny
-# NOTE: match - equal sign at beginning, followed by one of [.;$] where $ is the end of the line, which is what AUGUSTSUS / BRAKER produce - this might have to be tweaked for other outputs
-# NOTE: eg.  =XXX[. ;]
-
-while read new_gene old_gene; do
-     grep "ID=$old_gene[.;$]" ${gff}.tmp | sed -e "s/=${old_gene}[.]/=${new_gene}\./g" -e "s/=${old_gene}[;]/=${new_gene}\;/g" -e "s/=${old_gene}$/=${new_gene}/g" -e "s/Name=.*$/Name=${new_gene}/g";
-done < genes_renames.list > ${gff%.gff*}.genesrenamed.tmp
-
-
-
-# fix end of line characters
-sed -i 's/;$//g' ${gff%.gff*}.genesrenamed.tmp
-
-
-
-echo "##gff-version 3" > ${species_prefix}.renamed.gff3; cat ${gff%.gff*}.genesrenamed.tmp | sort -k1,1 -k4,4n >> ${species_prefix}.renamed.gff3
-
-# add mtDNA annotation to the end
-cat ${species_prefix}.renamed.gff3 C_johnstoni_mt_annotation.SD210906.gff.tmp > tmp; mv tmp ${species_prefix}.renamed.gff3
-
-# final fix, merging nuclear and mtDNA genomes
-mv CJOH_.renamed.gff3 cercopithifilaria_johnstoni_annotation_SD210906.gff3
-
-cat cjohnstoni_genome_210825.fa C_johnstoni_mt_draft_genome.fasta > cercopithifilaria_johnstoni_genome_SD210906.fasta
-
-# clean up ready for submission to ENA / WBP
-gt gff3 -sort -tidy -retainids cercopithifilaria_johnstoni_annotation_SD210906.gff3 > tmp; mv tmp cercopithifilaria_johnstoni_annotation_SD210906.gff3
-
-grep -v "###" cercopithifilaria_johnstoni_annotation_SD210906.gff3 > tmp ; mv tmp cercopithifilaria_johnstoni_annotation_SD210906.gff3
-```
-
-
-
-
-## Prepare for submission of assembly and annotation to ENA
-```bash   
-# wd: ~/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME
-
-module load ena-submissions/1.1.0-c3
-
-
-
 
 ```
