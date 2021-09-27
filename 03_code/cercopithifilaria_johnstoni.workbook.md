@@ -93,7 +93,7 @@ done < blobtools_filter_bycov_gt10_byhit.list
 
 
 ### rescaffold with opera
-- 
+- this attempts to identify unique joins in the assembly now some of the haplotypes have been removed
 ```bash
 # run bowtie to generate a mapping file
 bowtie2-build scaffolds.reduced.bt_filter.fa contigs
@@ -107,6 +107,7 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 
 
 ### rescaffold the opera output
+- the second round of redundans aims to use the short reads again to fill gaps in the assembly
 ```
 # run redundans, this time with reads, to scaffold and gapfill
 /nfs/users/nfs_s/sd21/lustre118_link/software/GENOME_IMPROVEMENT/redundans/redundans.py -f scaffoldSeq.fasta -i ../Cj3-500-700_S1_L001_R1_001.fastq.gz ../Cj3-500-700_S1_L001_R2_001.fastq.gz -o rescaffold -t 16
@@ -115,7 +116,6 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 
 
 ## annotation
-
 
 - preparation of hints for braker using PROTHINT (https://github.com/gatech-genemark/ProtHint)
 
@@ -147,6 +147,9 @@ gag.py -f ../../cjohnstoni_genome_200917.fa -g augustus.gff3
 ```
 
 ### Updating gene IDs in the annotation
+- Braker / Augustus generates a very generic set of gene IDs, which wont be unique relative to other assemblies using the same approach
+- used the pipeline below to add "CJOH_" followed using a unique 8 digit identifier that increments by a value of 10 per annotation. This provides plenty fo naming space to modify and add models in the future if/when needed
+- note that the genome models of the mtDNA genome was manually annotated.
 
 ```bash
 #working dir = /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME
@@ -794,3 +797,132 @@ ggmap(map) +
   get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap()
 
 ```
+
+
+
+
+
+## Wolbachia
+``` bash
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/WOLBACHIA
+
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.fasta
+
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.gff3
+
+gffread cercopithifilaria_johnstoni_annotation_SD210906.gff3 -g cercopithifilaria_johnstoni_genome_SD210906.fasta -y CJ_proteins.fasta
+
+module load farm_blast/0.1.6-c2
+
+
+Wolbachia genomes used as per: doi: 10.1099/mgen.0.000487
+wBm.fasta
+wBp.fasta
+wCauA.fasta
+wCfeJ.fasta
+wCfeT.fasta
+wCle.fasta
+wCtub.fasta
+wDcau.fasta
+wDimm.fasta
+wFol.fasta
+wLsig.fasta
+wMel.fasta
+wOo.fasta
+wOv.fasta
+wPip.fasta
+wTpre.fasta
+
+
+
+
+cat *fasta > wb_genomes.fasta
+
+# run exonerate to map Cj proteins to Wb genomes
+~sd21/bash_scripts/run_exonerate_splitter GENOMES/wb_genomes.fasta CJ_proteins.fasta
+
+
+cat split_exonerate*out | Exonerate_to_evm_gff3.pl - > merged_exonerate.output
+
+rm split_exonerate*out
+rm x*
+rm run_split*
+
+# extract gene IDs of Cj proteins that hit the wolbachia genomes
+cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | wc -l
+> 18 proteins in total.
+
+# CJOH_00012460.t1 - Select seq ref|XP_042937157.1|	NADH-ubiquinone oxidoreductase 49 kDa subunit, mitochondrial, putative
+# CJOH_00019630.t1 - Select seq ref|XP_001894995.1|	succinate dehydrogenase [ubiquinone] iron-sulfur protein, mitochondrial, putative [Bru
+# CJOH_00021270.t1 - BMA-ATP-2 [Brugia malayi]
+# CJOH_00023800.t1 - possible candidate, all bacterial hits - Select seq ref|WP_160413856.1|	YadA-like family protein
+# CJOH_00024270.t1 - NADH-quinone oxidoreductase, B subunit [Onchocerca flexuosa]
+# CJOH_00025330.t1 - fumarate hydratase [Loa loa]
+# CJOH_00036320.t1 - enolase [Loa loa]
+# CJOH_00041270.t1 - Select seq gb|OZC07229.1|	putative pyruvate dehydrogenase E1 component subunit beta [Onchocerca flexuosa]
+# CJOH_00042930.t1 - Select seq ref|XP_001894295.1|	NADH-ubiquinone oxidoreductase 51 kDa subunit, mitochondrial precursor, putative [
+# CJOH_00046080.t1 - Clp protease [Loa loa]
+# CJOH_00047910.t1 - Select seq ref|XP_020303419.1|	NFS1 protein [Loa loa]
+# CJOH_00065980.t1 - Select seq ref|XP_001894923.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [
+# CJOH_00065990.t1 - Select seq ref|XP_001894922.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [B
+# CJOH_00072200.t1 - ATP synthase F1 [Wuchereria bancrofti]
+# CJOH_00083160.t1 - possible candidate prophage tail fiber N-terminal domain-containing protein [Escherichia coli]
+# CJOH_00083890.t1 - Select seq ref|XP_020307530.1|	chaperone DnaK [Loa loa]
+# CJOH_00095100.t1 - Select seq gb|OZC10981.1|	FeS cluster assembly scaffold IscU [Onchocerca flexuosa]
+# CJOH_00103440.t1 - Select seq ref|XP_003139042.1|	NADH-ubiquinone oxidoreductase 23 kDa subunit [Loa loa]
+
+
+# extract the sequennces
+
+cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | while read -r name; do samtools faidx CJ_proteins.fasta ${name} >> Cj_wb_candidates.fa ; done
+
+# used blastp to query the sequences
+```
+
+
+
+
+
+
+### Kraken on raw reads
+```
+ln -s Cj3-500-700_S1_L001_R1_001.fastq.gz
+ln -s Cj3-500-700_S1_L001_R2_001.fastq.gz
+
+
+module load kraken2/2.0.8_beta=pl526h6bb024c_0-c1
+
+# run kraken on the modern PE trimmed reads
+bsub.py 10 kraken "kraken2 \
+     --db /lustre/scratch118/infgen/pathogen/pathpipe/kraken2/silva_ssu_nr99_release_132 \
+     --report cj_rawreads.kraken2report \
+     --paired Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz"
+
+
+```
+- unclassified and so likely worm
+     - 98.55	24021348	24021348	U	0	unclassified
+-  bacterial total
+     - 0.38	92448	2905	D	3	  Bacteria
+
+- wolbachia like
+0.03	6560	104	C	2379	      Alphaproteobacteria
+0.02	3683	0	O	2761	        Rickettsiales
+0.01	3339	3339	F	2805	          Mitochondria
+0.00	172	0	F	2763	          Anaplasmataceae
+0.00	168	168	G	2771	            uncultured
+0.00	2	2	G	2764	            Anaplasma
+0.00	1	1	G	2768	            Ehrlichia
+0.00	1	1	G	2770	            Wolbachia
+0.00	75	75	F	2796	          S25-593
+0.00	75	0	F	26213	          Midichloriaceae
+0.00	74	74	G	26222	            MD3-55
+0.00	1	1	G	26220	            Candidatus Midichloria
+0.00	13	13	F	2801	          SM2D12
+0.00	6	0	F	2781	          Rickettsiaceae
+0.00	3	3	G	2782	            Candidatus Cryptoprodotis
+0.00	1	1	G	2783	            Orientia
+0.00	1	1	G	2785	            uncultured
+0.00	1	1	G	26224	            Ac37b
+0.00	2	2	F	2806	          uncultured
+0.00	1	1	F	26212	          AB1
