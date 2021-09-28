@@ -25,13 +25,15 @@
 
 
 ### redundans
+- using redundans first to identifiy and remove excess haplotypic sequneces
 ```bash
-# using redundans first to identifiy and remove excess haplotypic sequneces
+# run redundans
 /nfs/users/nfs_s/sd21/lustre118_link/software/GENOME_IMPROVEMENT/redundans/redundans.py --fasta scaffolds.fasta --outdir REDUNDANS_OUT
 
 ```
 
 ### blobtools
+- using blobtools to identify and filter potnetial contaminants in the assembly
 ```bash
 # get taxdump
 curl -L ftp://ftp.ncbi.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz | tar xzf -
@@ -115,8 +117,8 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 ```
 
 
-## annotation
-
+## Annotation
+### Preparation of hints for running BRAKER
 - preparation of hints for braker using PROTHINT (https://github.com/gatech-genemark/ProtHint)
 
 ```bash
@@ -124,7 +126,7 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 ```
 
 
-
+### Running BRAKER
 - annotation using braker
 ```bash
 export AUGUSTUS_CONFIG_PATH=/nfs/users/nfs_s/sd21/software/augustus-3.2.1/config
@@ -352,7 +354,212 @@ gzip cercopithifilaria_johnstoni_genome_SD210906.embl
 
 
 
+## Wolbachia analyses
+- want to check to see if there is evidence of Wolbachia or similar, an endosymbiont commonly associated with filarial nematodes
+- a key reason for this is the the immunopathology of Onchocerca volvulus infection is thought to be driven by Wolbachia, and ivne the similar immunopathology caused by C. johnstoni in rats, identifying the presence or absence of Wolbachia may provide evidence for or against this hypothesis
 
+
+
+``` bash
+# working dir
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/WOLBACHIA
+
+# make some links to Cj genome and annotation in working dir
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.fasta
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.gff3
+
+# extract proteins from Cj annotation
+gffread cercopithifilaria_johnstoni_annotation_SD210906.gff3 -g cercopithifilaria_johnstoni_genome_SD210906.fasta -y CJ_proteins.fasta
+
+
+#
+# Wolbachia genomes used as per: doi: 10.1099/mgen.0.000487
+# wBm.fasta
+# wBp.fasta
+# wCauA.fasta
+# wCfeJ.fasta
+# wCfeT.fasta
+# wCle.fasta
+# wCtub.fasta
+# wDcau.fasta
+# wDimm.fasta
+# wFol.fasta
+# wLsig.fasta
+# wMel.fasta
+# wOo.fasta
+# wOv.fasta
+# wPip.fasta
+# wTpre.fasta
+
+# Downloaded from NCBI
+
+cat *fasta > wb_genomes.fasta
+```
+
+
+### Kraken on raw reads
+- kraken is a useful tool for analysing contamination in raw read data
+- Wolbachia and related species are in the kraken database, so this is a way, independent of the assembly, to check for the presence of Wolbachia
+
+```bash
+# get the raw reads
+ln -s Cj3-500-700_S1_L001_R1_001.fastq.gz
+ln -s Cj3-500-700_S1_L001_R2_001.fastq.gz
+
+# load kraken2
+module load kraken2/2.0.8_beta=pl526h6bb024c_0-c1
+
+# run kraken on the modern PE trimmed reads
+bsub.py 10 kraken "kraken2 \
+     --db /lustre/scratch118/infgen/pathogen/pathpipe/kraken2/silva_ssu_nr99_release_132 \
+     --report cj_rawreads.kraken2report \
+     --paired Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz"
+```
+- outcome suggests vast majority of reads (98.55%) are unclassified (ie, not in the database), and therefore, likely worm
+     - 98.55	24021348	24021348	U	0	unclassified
+
+-  only a very small amount bacterial in total - I would expect "some" bacterial contamination anyway
+     - 0.38	92448	2905	D	3	  Bacteria
+
+- Only a fraction of those bacterial hits are classified as wolbachia or wolbachia like. I think this is pretty conclusive that there is no wolbachia present
+
+     0.03	6560	104	C	2379	      Alphaproteobacteria
+     0.02	3683	0	O	2761	        Rickettsiales
+     0.01	3339	3339	F	2805	          Mitochondria
+     0.00	172	0	F	2763	          Anaplasmataceae
+     0.00	168	168	G	2771	            uncultured
+     0.00	2	2	G	2764	            Anaplasma
+     0.00	1	1	G	2768	            Ehrlichia
+     0.00	1	1	G	2770	            Wolbachia
+     0.00	75	75	F	2796	          S25-593
+     0.00	75	0	F	26213	          Midichloriaceae
+     0.00	74	74	G	26222	            MD3-55
+     0.00	1	1	G	26220	            Candidatus Midichloria
+     0.00	13	13	F	2801	          SM2D12
+     0.00	6	0	F	2781	          Rickettsiaceae
+     0.00	3	3	G	2782	            Candidatus Cryptoprodotis
+     0.00	1	1	G	2783	            Orientia
+     0.00	1	1	G	2785	            uncultured
+     0.00	1	1	G	26224	            Ac37b
+     0.00	2	2	F	2806	          uncultured
+     0.00	1	1	F	26212	          AB1
+
+
+
+### Mapping Cj proteins to Wolbachia genome collection using exonerate
+- useful way to map protein sequences onto genomes
+```bash
+# run exonerate
+~sd21/bash_scripts/run_exonerate_splitter GENOMES/wb_genomes.fasta CJ_proteins.fasta
+
+# combine output of exonerate, and convert to GFF format
+cat split_exonerate*out | Exonerate_to_evm_gff3.pl - > merged_exonerate.output
+
+# clean up unnecessary files
+rm split_exonerate*out
+rm x*
+rm run_split*
+
+# extract gene IDs of Cj proteins that hit the wolbachia genomes
+cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | wc -l
+> 18 proteins in total.
+
+# extract the hit sequennces to a new file
+cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | while read -r name; do samtools faidx CJ_proteins.fasta ${name} >> Cj_wb_candidates.fa ; done
+
+# used NCBI web blastp to query the sequences - results are below
+
+```
+- where "~sd21/bash_scripts/run_exonerate_splitter" is:
+```bash
+#!/usr/bin/env bash
+# exonerate splitter
+
+reference=$1
+query=$2
+sequences_per_chunk=10
+
+length=$((${sequences_per_chunk} * 2))
+
+fastaq to_fasta -l 0 ${reference} ref.fa
+fastaq to_fasta -l 0 ${query} query.fa
+
+split -da 4 -l ${length} query.fa
+
+n=0
+for i in ` ls -1 x???? ` ; do
+let "n+=1"
+echo -e "exonerate --model protein2genome --percent 50 ${i} ref.fa --showtargetgff > split_exonerate_${n}_${i}.out" > run_split_exonerate_${n}; done
+
+chmod a+x run_split_exonerate_*
+bsub -q normal -n1 -R'span[hosts=1] select[mem>2500] rusage[mem=2500]' -M2500 -J "split_exonerate[1-$n]" -e split_exonerate[1-$n].e -o split_exonerate[1-$n].o ./run_split_
+exonerate_\$LSB_JOBINDEX
+bsub -q normal -n1 -R'span[hosts=1] select[mem>100] rusage[mem=100]' -M100 -w split_exonerate -J "split_exonerate_FIN" "touch FINISHED"
+```
+- 18 proteins in total
+     - 2 bacterial like - seem enriched in bacterial species rather than nematode species
+     - 16 are most components of the mitochondria, and perhaps would be expected to
+          - these were found in many nematodes, including filarial and non-filaria, whcih would suggest not related to Wb
+
+- list with blast annotation - wasnt necessaily the top hit, but highest hit with a description
+     - CJOH_00012460.t1 - Select seq ref|XP_042937157.1|	NADH-ubiquinone oxidoreductase 49 kDa subunit, mitochondrial, putative
+     - CJOH_00019630.t1 - Select seq ref|XP_001894995.1|	succinate dehydrogenase [ubiquinone] iron-sulfur protein, mitochondrial, putative [Bru
+     - CJOH_00021270.t1 - BMA-ATP-2 [Brugia malayi]
+     - CJOH_00023800.t1 - possible candidate, all bacterial hits - Select seq ref|WP_160413856.1|	YadA-like family protein
+     - CJOH_00024270.t1 - NADH-quinone oxidoreductase, B subunit [Onchocerca flexuosa]
+     - CJOH_00025330.t1 - fumarate hydratase [Loa loa]
+     - CJOH_00036320.t1 - enolase [Loa loa]
+     - CJOH_00041270.t1 - Select seq gb|OZC07229.1|	putative pyruvate dehydrogenase E1 component subunit beta [Onchocerca flexuosa]
+     - CJOH_00042930.t1 - Select seq ref|XP_001894295.1|	NADH-ubiquinone oxidoreductase 51 kDa subunit, mitochondrial precursor, putative [
+     - CJOH_00046080.t1 - Clp protease [Loa loa]
+     - CJOH_00047910.t1 - Select seq ref|XP_020303419.1|	NFS1 protein [Loa loa]
+     - CJOH_00065980.t1 - Select seq ref|XP_001894923.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [
+     - CJOH_00065990.t1 - Select seq ref|XP_001894922.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [B
+     - CJOH_00072200.t1 - ATP synthase F1 [Wuchereria bancrofti]
+     - CJOH_00083160.t1 - possible candidate prophage tail fiber N-terminal domain-containing protein [Escherichia coli] / collagen like protein.
+     - CJOH_00083890.t1 - Select seq ref|XP_020307530.1|	chaperone DnaK [Loa loa]
+     - CJOH_00095100.t1 - Select seq gb|OZC10981.1|	FeS cluster assembly scaffold IscU [Onchocerca flexuosa]
+     - CJOH_00103440.t1 - Select seq ref|XP_003139042.1|	NADH-ubiquinone oxidoreductase 23 kDa subunit [Loa loa]
+
+
+
+
+### Promer of Cj genome against Wb genomes
+- finally, want to quantify the sequence similarities between Cj and Wb genomes
+```bash
+# run promer on the genome against Wb genomes.
+bsub.py 10 promer "promer --maxmatch GENOMES/wb_genomes.fasta cercopithifilaria_johnstoni_genome_SD210906.v2.fasta"
+
+# extract the coordinates
+show-coords -THl out.delta > out.coords
+
+# sort hits by wolbachia ID, and the calulate thte total length of those hits and mean ID per Wb genome
+sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
+```
+- output , after adding genome ID and genome length, and then calculating proportion of genome in excel
+Genome	 Total_length_hits	Mean_percentage_similarity	genome_size	proportion_genome_hit
+CP041215.1	16116	66.64302632	1449344	1.111951338
+CP046577.1	15879	64.49867647	1045802	1.518356247
+CP046578.1	14952	65.58705882	920122	1.625001902
+CP046579.1	11481	66.31	863988	1.328837901
+CP046580.1	12909	65.65070175	863427	1.495088757
+NC_002978.6	15591	66.53785714	1267782	1.229785563
+NC_006833.1	15390	64.63731343	1080084	1.424889175
+NC_010981.1	16851	65.3215	1482455	1.136695549
+NC_018267.1	14892	64.732	957990	1.554504744
+NZ_AP013028.1	19878	64.04184783	1250060	1.590163672
+NZ_CM003641.1	16542	63.55328767	1133809	1.458975895
+NZ_CP015510.2	21981	63.07037383	1801626	1.220064542
+NZ_CP050521.1	15036	64.69727273	1072967	1.401347851
+NZ_CP051156.1	14220	67.58044776	1495538	0.950828398
+NZ_CP051157.1	18507	63.25634146	1201647	1.540136163
+NZ_HG810405.1	14838	64.72314286	960618	1.544630644
+
+mean	15941.4375	65.052553	1177953.688	1.383203646
+
+- suggests that only 1.38% of Wb genomes shared with Cj genome.
+- given I found some genes, mostly mitochodnrial in origin, shared, I would say this demonstrates that
+- So, no Wolbachia present.
 
 
 
@@ -385,8 +592,25 @@ jellyfish histo -t 10 reads.jf > reads.histo
 # use the "reads.histo" as input to genomescope
 
 # output of run: http://genomescope.org/analysis.php?code=8JHWvmV1sukF1nGshxjY
+# rerun in genomescope2: http://genomescope.org/genomescope2.0/analysis.php?code=wN4P2Ru51VfnpIQwHcz6
 
 ```
+GenomeScope version 2.0
+input file = user_uploads/wN4P2Ru51VfnpIQwHcz6
+output directory = user_data/wN4P2Ru51VfnpIQwHcz6
+p = 2
+k = 21
+
+| property                      |min               |max               
+|Homozygous (aa)               |98.9614%          |98.9724%          
+|Heterozygous (ab)             |1.02756%          |1.03864% |         
+|Genome Haploid Length         |63,161,930 bp     |63,240,284 bp |    
+|Genome Repeat Length          |3,104,451 bp      |3,108,302 bp |      
+|Genome Unique Length          |60,057,479 bp     |60,131,982 bp |     
+|Model Fit                     |96.8819%          |99.1873% |          
+|Read Error Rate               |0.209979%         |0.209979% |        
+
+
 
 
 ### Repeat model and mask of filarial genomes
@@ -797,132 +1021,3 @@ ggmap(map) +
   get_stamenmap(us, zoom = 10, maptype = "terrain") %>% ggmap()
 
 ```
-
-
-
-
-
-## Wolbachia
-``` bash
-cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/WOLBACHIA
-
-ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.fasta
-
-ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/cercopithifilaria_johnstoni_genome_SD210906.gff3
-
-gffread cercopithifilaria_johnstoni_annotation_SD210906.gff3 -g cercopithifilaria_johnstoni_genome_SD210906.fasta -y CJ_proteins.fasta
-
-module load farm_blast/0.1.6-c2
-
-
-Wolbachia genomes used as per: doi: 10.1099/mgen.0.000487
-wBm.fasta
-wBp.fasta
-wCauA.fasta
-wCfeJ.fasta
-wCfeT.fasta
-wCle.fasta
-wCtub.fasta
-wDcau.fasta
-wDimm.fasta
-wFol.fasta
-wLsig.fasta
-wMel.fasta
-wOo.fasta
-wOv.fasta
-wPip.fasta
-wTpre.fasta
-
-
-
-
-cat *fasta > wb_genomes.fasta
-
-# run exonerate to map Cj proteins to Wb genomes
-~sd21/bash_scripts/run_exonerate_splitter GENOMES/wb_genomes.fasta CJ_proteins.fasta
-
-
-cat split_exonerate*out | Exonerate_to_evm_gff3.pl - > merged_exonerate.output
-
-rm split_exonerate*out
-rm x*
-rm run_split*
-
-# extract gene IDs of Cj proteins that hit the wolbachia genomes
-cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | wc -l
-> 18 proteins in total.
-
-# CJOH_00012460.t1 - Select seq ref|XP_042937157.1|	NADH-ubiquinone oxidoreductase 49 kDa subunit, mitochondrial, putative
-# CJOH_00019630.t1 - Select seq ref|XP_001894995.1|	succinate dehydrogenase [ubiquinone] iron-sulfur protein, mitochondrial, putative [Bru
-# CJOH_00021270.t1 - BMA-ATP-2 [Brugia malayi]
-# CJOH_00023800.t1 - possible candidate, all bacterial hits - Select seq ref|WP_160413856.1|	YadA-like family protein
-# CJOH_00024270.t1 - NADH-quinone oxidoreductase, B subunit [Onchocerca flexuosa]
-# CJOH_00025330.t1 - fumarate hydratase [Loa loa]
-# CJOH_00036320.t1 - enolase [Loa loa]
-# CJOH_00041270.t1 - Select seq gb|OZC07229.1|	putative pyruvate dehydrogenase E1 component subunit beta [Onchocerca flexuosa]
-# CJOH_00042930.t1 - Select seq ref|XP_001894295.1|	NADH-ubiquinone oxidoreductase 51 kDa subunit, mitochondrial precursor, putative [
-# CJOH_00046080.t1 - Clp protease [Loa loa]
-# CJOH_00047910.t1 - Select seq ref|XP_020303419.1|	NFS1 protein [Loa loa]
-# CJOH_00065980.t1 - Select seq ref|XP_001894923.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [
-# CJOH_00065990.t1 - Select seq ref|XP_001894922.1|	succinate dehydrogenase [ubiquinone] flavoprotein subunit, mitochondrial, putative [B
-# CJOH_00072200.t1 - ATP synthase F1 [Wuchereria bancrofti]
-# CJOH_00083160.t1 - possible candidate prophage tail fiber N-terminal domain-containing protein [Escherichia coli]
-# CJOH_00083890.t1 - Select seq ref|XP_020307530.1|	chaperone DnaK [Loa loa]
-# CJOH_00095100.t1 - Select seq gb|OZC10981.1|	FeS cluster assembly scaffold IscU [Onchocerca flexuosa]
-# CJOH_00103440.t1 - Select seq ref|XP_003139042.1|	NADH-ubiquinone oxidoreductase 23 kDa subunit [Loa loa]
-
-
-# extract the sequennces
-
-cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | while read -r name; do samtools faidx CJ_proteins.fasta ${name} >> Cj_wb_candidates.fa ; done
-
-# used blastp to query the sequences
-```
-
-
-
-
-
-
-### Kraken on raw reads
-```
-ln -s Cj3-500-700_S1_L001_R1_001.fastq.gz
-ln -s Cj3-500-700_S1_L001_R2_001.fastq.gz
-
-
-module load kraken2/2.0.8_beta=pl526h6bb024c_0-c1
-
-# run kraken on the modern PE trimmed reads
-bsub.py 10 kraken "kraken2 \
-     --db /lustre/scratch118/infgen/pathogen/pathpipe/kraken2/silva_ssu_nr99_release_132 \
-     --report cj_rawreads.kraken2report \
-     --paired Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz"
-
-
-```
-- unclassified and so likely worm
-     - 98.55	24021348	24021348	U	0	unclassified
--  bacterial total
-     - 0.38	92448	2905	D	3	  Bacteria
-
-- wolbachia like
-0.03	6560	104	C	2379	      Alphaproteobacteria
-0.02	3683	0	O	2761	        Rickettsiales
-0.01	3339	3339	F	2805	          Mitochondria
-0.00	172	0	F	2763	          Anaplasmataceae
-0.00	168	168	G	2771	            uncultured
-0.00	2	2	G	2764	            Anaplasma
-0.00	1	1	G	2768	            Ehrlichia
-0.00	1	1	G	2770	            Wolbachia
-0.00	75	75	F	2796	          S25-593
-0.00	75	0	F	26213	          Midichloriaceae
-0.00	74	74	G	26222	            MD3-55
-0.00	1	1	G	26220	            Candidatus Midichloria
-0.00	13	13	F	2801	          SM2D12
-0.00	6	0	F	2781	          Rickettsiaceae
-0.00	3	3	G	2782	            Candidatus Cryptoprodotis
-0.00	1	1	G	2783	            Orientia
-0.00	1	1	G	2785	            uncultured
-0.00	1	1	G	26224	            Ac37b
-0.00	2	2	F	2806	          uncultured
-0.00	1	1	F	26212	          AB1
