@@ -5,13 +5,15 @@
 - Stephen Doyle (Wellcome Sanger Institute, ex LTU)
 
 
-## Sequnecing and raw reads
+## Sequencing and raw reads
 ### Sequencing
-- sequnecing was performed by Steve at LTU on an Illumina MiSeq
+- sequencing was performed by Steve at LTU on an Illumina MiSeq using a V3 600 cycle (2x300 bp) sequencing kit
 
 
 ### Raw reads
--
+- raw reads were checked using FastQC and MultiQC before analysis
+- this was done at LTU years back, and I don't have the data anymore, but would be easy to regenerate
+- it was clear from this data the drop in sequencing quality beyond 150-200 bp of the long MiSeq reads. While this is acceptible for some applications, it turned out not to be from the initial assemblies produced. Hence, the reads were trimmed quite hard as described below.
 
 
 ### Trimming
@@ -644,7 +646,8 @@ mean	15941.4375	65.052553	1177953.688	1.383203646
 
 ## Other analyses (not in paper)
 - these were used either for Kirsty's thesis or just exploring the data, however, they are not described in the paper
-- just keeping he
+- just keeping it here for future reference
+
 ### Repeat model and mask of filarial genomes
 
 ```shell
