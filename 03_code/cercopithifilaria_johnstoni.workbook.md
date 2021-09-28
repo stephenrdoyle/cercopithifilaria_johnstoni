@@ -595,21 +595,16 @@ jellyfish histo -t 10 reads.jf > reads.histo
 # rerun in genomescope2: http://genomescope.org/genomescope2.0/analysis.php?code=wN4P2Ru51VfnpIQwHcz6
 
 ```
-GenomeScope version 2.0
-input file = user_uploads/wN4P2Ru51VfnpIQwHcz6
-output directory = user_data/wN4P2Ru51VfnpIQwHcz6
-p = 2
-k = 21
-
-| property                      |min               |max               
-|Homozygous (aa)               |98.9614%          |98.9724%          
+- Genomescope2 output
+| property                      |min               |max |
+| --- | --- | --- |              
+|Homozygous (aa)               |98.9614%          |98.9724% |         
 |Heterozygous (ab)             |1.02756%          |1.03864% |         
 |Genome Haploid Length         |63,161,930 bp     |63,240,284 bp |    
 |Genome Repeat Length          |3,104,451 bp      |3,108,302 bp |      
 |Genome Unique Length          |60,057,479 bp     |60,131,982 bp |     
 |Model Fit                     |96.8819%          |99.1873% |          
 |Read Error Rate               |0.209979%         |0.209979% |        
-
 
 
 
