@@ -601,9 +601,9 @@ jellyfish histo -t 10 reads.jf > reads.histo
 | Homozygous (aa) | 98.9614% | 98.9724% |
 | Heterozygous (ab) | 1.02756% | 1.03864% |
 | Genome Haploid Length | 63,161,930 bp | 63,240,284 bp |
-| Genome Repeat Length | 3,104,451 bp      | 3,108,302 bp |      
-| Genome Unique Length          | 60,057,479 bp     | 60,131,982 bp |     
-| Model Fit                     | 96.8819%          | 99.1873% |          
+| Genome Repeat Length | 3,104,451 bp | 3,108,302 bp |
+| Genome Unique Length | 60,057,479 bp | 60,131,982 bp |     
+| Model Fit | 96.8819%          | 99.1873% |          
 | Read Error Rate               | 0.209979%         | 0.209979% |        
 
 
