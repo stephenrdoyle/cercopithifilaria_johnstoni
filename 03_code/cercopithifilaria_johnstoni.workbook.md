@@ -5,15 +5,85 @@
 - Stephen Doyle (Wellcome Sanger Institute, ex LTU)
 
 
-## genome assembly
+## Sequnecing and raw reads
+### Sequencing
+- sequnecing was performed by Steve at LTU on an Illumina MiSeq
+
+
+### Raw reads
+-
+
+
+### Trimming
 - reads were trimmed using Trimmomatic
-     - found that assemblies with full length reads were suboptimal to trimmed reads, trimmed not only for quality by also for length. Given the high coverage, hard trimmed back to 150 bp together with quality trimming was a good compromise and worked well.
+- found that assemblies with full length reads were suboptimal to trimmed reads, trimmed not only for quality by also for length. Given the high coverage, hard trimmed back to 150 bp together with quality trimming was a good compromise and worked well.
+
+```bash
+module load trimmomatic/0.39--1
+
+run_trimmomatic CJ Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz
+
+```
+- where "run_trimmomatic" is:
+```bash
+out_prefix=$1
+read_1=$2
+read_2=$3
+
+
+java -jar /software/pathogen/external/apps/usr/local/Trimmomatic-0.32/trimmomatic-0.32.jar PE \
+-threads 4 \
+-phred33 \
+${read_1} ${read_2} \
+${out_prefix}.paired_R1.fastq.gz ${out_prefix}.unpaired_R1.fastq.gz \
+${out_prefix}.paired_R2.fastq.gz ${out_prefix}.unpaired_R2.fastq.gz \
+ILLUMINACLIP:/nfs/users/nfs_s/sd21/databases/trimmomatic_Illumina-adapters.fa:2:30:10 \
+CROP:150 SLIDINGWINDOW:10:20 MINLEN:100
+```
+
+### Genome Scope
+- Genome Scope was used to estimate the genome size from the raw reads
+```bash
+# un gizip the raw data
+for i in *gz; do
+zcat ${i} > ${i%.gz}; done
+
+# run jellyfish
+jellyfish count -C -m 21 -s 1000000000 -t 10 *.fastq -o reads.jf
+
+jellyfish histo -t 10 reads.jf > reads.histo
+
+# use the "reads.histo" as input to genomescope
+
+# output of run: http://genomescope.org/analysis.php?code=8JHWvmV1sukF1nGshxjY
+# rerun in genomescope2: http://genomescope.org/genomescope2.0/analysis.php?code=wN4P2Ru51VfnpIQwHcz6
+
+```
+- Genomescope2 output
+
+| property | min | max |
+| --- | --- | --- |
+| Homozygous | 98.9614% | 98.9724% |
+| Heterozygous | 1.02756% | 1.03864% |
+| Genome Haploid Length | 63,161,930 bp | 63,240,284 bp |
+| Genome Repeat Length | 3,104,451 bp | 3,108,302 bp |
+| Genome Unique Length | 60,057,479 bp | 60,131,982 bp |     
+| Model Fit | 96.8819% | 99.1873% |
+| Read Error Rate | 0.209979% | 0.209979% |
+
+
+
+
+
+
+## Genome assembly
 - assembly was performed by Kirsty at La Trobe using Spades with default parameters
 
 
 
+
 ## genome improvement
-- genome improvement performed by Steve at Sanger
+- Genome improvement performed by Steve at Sanger
 - output of spades (as presented in Kirsty's thesis)
 /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/scaffolds.fasta
 
@@ -24,7 +94,7 @@
      - redundans (with reads) - scaffold and gapfill
 
 
-### redundans
+### Redundans
 - using redundans first to identifiy and remove excess haplotypic sequneces
 ```bash
 # run redundans
@@ -32,7 +102,7 @@
 
 ```
 
-### blobtools
+### Blobtools
 - using blobtools to identify and filter potnetial contaminants in the assembly
 ```bash
 # get taxdump
@@ -94,7 +164,7 @@ done < blobtools_filter_bycov_gt10_byhit.list
 
 
 
-### rescaffold with opera
+### Rescaffold with opera
 - this attempts to identify unique joins in the assembly now some of the haplotypes have been removed
 ```bash
 # run bowtie to generate a mapping file
@@ -108,7 +178,7 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 
 
 
-### rescaffold the opera output
+### Rescaffold and gapfill the opera output using Redundans again
 - the second round of redundans aims to use the short reads again to fill gaps in the assembly
 ```
 # run redundans, this time with reads, to scaffold and gapfill
@@ -117,7 +187,7 @@ bowtie2 -k 5 -x contigs -X 1000 --rf -p 32 -1 Cj3-500-700_S1_L001_R1_001.fastq.g
 ```
 
 
-## Annotation
+## Genome annotation
 ### Preparation of hints for running BRAKER
 - preparation of hints for braker using PROTHINT (https://github.com/gatech-genemark/ProtHint)
 
@@ -212,11 +282,9 @@ grep -v "###" cercopithifilaria_johnstoni_annotation_SD210906.gff3 > tmp ; mv tm
 
 
 
-
-
 ## Assessing genome completeness using BUSCO
 
-### iteratative analysis of genome improvements
+### Running BUSCO to examine iteratative analysis of genome improvements
 ```bash
 cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/BUSCO
 
@@ -228,7 +296,9 @@ bsub.py --queue long --threads 30 20 busco11 ~sd21/bash_scripts/run_busco_nemato
 
 ```
 
-### run BUSCO for genome assemblies
+
+
+### Running BUSCO for genome assemblies of Cj and other filarial nematodes
 ```bash
 
 # load req augustus components for BUSCO
@@ -262,6 +332,10 @@ for i in *.fa; do
      done
 ```
 
+
+
+
+
 ### Analysis of proteins predicted in the genome vs related species
 ```bash
 wget ftp://ftp.ebi.ac.uk/pub/databases/wormbase/parasite/releases/WBPS16/species/onchocerca_volvulus/PRJEB513/onchocerca_volvulus.PRJEB513.WBPS16.protein.fa.gz
@@ -293,6 +367,8 @@ done
 
 ```
 
+
+
 ## Assembly statistics for filarial nematodes + C. johnstoni
 ```bash
 
@@ -301,9 +377,9 @@ cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/SEQ_STATS
 # assembly stats - note, this uses the genome fastas that were downloaded above for the BUSCO analyses
 assembly-stats -t *fa | cut -f 1,2,3,9,10
 
-
-
 ```
+
+
 
 ## ENA submission
 ### Preparation of FASTQ reads for ENA submission
@@ -357,7 +433,6 @@ gzip cercopithifilaria_johnstoni_genome_SD210906.embl
 ## Wolbachia analyses
 - want to check to see if there is evidence of Wolbachia or similar, an endosymbiont commonly associated with filarial nematodes
 - a key reason for this is the the immunopathology of Onchocerca volvulus infection is thought to be driven by Wolbachia, and ivne the similar immunopathology caused by C. johnstoni in rats, identifying the presence or absence of Wolbachia may provide evidence for or against this hypothesis
-
 
 
 ``` bash
@@ -567,48 +642,9 @@ mean	15941.4375	65.052553	1177953.688	1.383203646
 
 
 
-## other analyses (not in paper)
-
-
-### Genome Scope
-```bash
-# trim the reads first - the full length reads are quite error prone
-
-module load trimmomatic/0.39--1
-
-run_trimmomatic CJ Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz
-
-# trimmomatic settings: ILLUMINACLIP:/nfs/users/nfs_s/sd21/databases/trimmomatic_Illumina-adapters.fa:2:30:10 CROP:150 SLIDINGWINDOW:10:20 MINLEN:100
-
-# un gizip the raw data
-for i in *gz; do
-zcat ${i} > ${i%.gz}; done
-
-# run jellyfish
-jellyfish count -C -m 21 -s 1000000000 -t 10 *.fastq -o reads.jf
-
-jellyfish histo -t 10 reads.jf > reads.histo
-
-# use the "reads.histo" as input to genomescope
-
-# output of run: http://genomescope.org/analysis.php?code=8JHWvmV1sukF1nGshxjY
-# rerun in genomescope2: http://genomescope.org/genomescope2.0/analysis.php?code=wN4P2Ru51VfnpIQwHcz6
-
-```
-- Genomescope2 output
-
-| property | min | max |
-| --- | --- | --- |
-| Homozygous (aa) | 98.9614% | 98.9724% |
-| Heterozygous (ab) | 1.02756% | 1.03864% |
-| Genome Haploid Length | 63,161,930 bp | 63,240,284 bp |
-| Genome Repeat Length | 3,104,451 bp | 3,108,302 bp |
-| Genome Unique Length | 60,057,479 bp | 60,131,982 bp |     
-| Model Fit | 96.8819% | 99.1873% |
-| Read Error Rate | 0.209979% | 0.209979% |
-
-
-
+## Other analyses (not in paper)
+- these were used either for Kirsty's thesis or just exploring the data, however, they are not described in the paper
+- just keeping he
 ### Repeat model and mask of filarial genomes
 
 ```shell
@@ -735,30 +771,6 @@ ggplot(data, aes(csum, log10(V2), group=V3, colour = V3)) + geom_point()
 
 
 
-
-#---------------------------------------------------------------------------------------------------------------------
-
-# Filarial nematode BUSCO analyses whole genomes
-
-```
-cd /Documents/Programs/busco-master
-
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_pahangi.PRJEB497.WBPS13.genomic.fa -o B_pahangi_Busco -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_timori.PRJEB4663.WBPS13.genomic.fa -o B_timori_Busco -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/acanthocheilonema_viteae.PRJEB1697.WBPS13.genomic.fa -o A_viteae_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/brugia_malayi.PRJNA10729.WBPS13.genomic.fa -o B_malayi_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/dirofilaria_immitis.PRJEB1797.WBPS13.genomic.fa -o D_immitis_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/litomosoides_sigmodontis.PRJEB3075.WBPS13.genomic.fa -o L_sigmodontis_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/loa_loa.PRJNA246086.WBPS13.genomic.fa -o L_loa_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_flexuosa.PRJEB512.WBPS13.genomic.fa -o O_flexuosa_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_ochengi.PRJEB1204.WBPS13.genomic.fa -o O_ochengi_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/onchocerca_volvulus.PRJEB513.WBPS14.genomic.fa -o O_volvulus_BUSCO -l nematoda_odb9/ -m geno
-python scripts/run_BUSCO.py -i /home/kirstmac/Documents/whole-genomes/wuchereria_bancrofti.PRJEB536.WBPS13.genomic.fa -o W_bancrofti_BUSCO -l nematoda_odb9/ -m geno
-
-
-
-
-```
 
 
 
