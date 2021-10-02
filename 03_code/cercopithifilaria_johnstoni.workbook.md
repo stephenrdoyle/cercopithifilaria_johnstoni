@@ -626,13 +626,15 @@ sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
 
 ```
 
-- output , after adding genome ID and genome length, and then calculating proportion of genome in excel
-| Genome	 | Total_length_hits	| Mean_percentage_similarity	| genome_size	| proportion_genome_hit
-| CP041215.1	| 16116	| 66.64302632	| 1449344	| 1.111951338
-| CP046577.1	| 15879	| 64.49867647	| 1045802	| 1.518356247
-| CP046578.1	| 14952	| 65.58705882	| 920122	| 1.625001902
-| CP046579.1	| 11481	| 66.31	| 863988	| 1.328837901
-| CP046580.1	| 12909	| 65.65070175	| 863427	| 1.495088757
+- output , after adding genome ID and genome length, and then calculating proportion of genome in excel  
+
+| Genome | Total_length_hits	| Mean_percentage_similarity	| genome_size	| proportion_genome_hit |
+| --- | --- | --- | --- | --- |
+| CP041215.1	| 16116	| 66.64302632	| 1449344	| 1.111951338 |
+| CP046577.1	| 15879	| 64.49867647	| 1045802	| 1.518356247 |
+| CP046578.1	| 14952	| 65.58705882	| 920122	| 1.625001902 |
+| CP046579.1	| 11481	| 66.31	| 863988	| 1.328837901 |
+| CP046580.1	| 12909	| 65.65070175	| 863427	| 1.495088757 |
 | NC_002978.6	| 15591	| 66.53785714	| 1267782	| 1.229785563 |
 | NC_006833.1	| 15390	| 64.63731343	| 1080084	| 1.424889175 |
 | NC_010981.1	| 16851	| 65.3215	| 1482455	| 1.136695549 |
@@ -645,6 +647,7 @@ sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
 | NZ_CP051157.1	| 18507	| 63.25634146	| 1201647	| 1.540136163 |
 | NZ_HG810405.1	| 14838	| 64.72314286	| 960618	| 1.544630644 |
 | mean	| 15941.4375	| 65.052553	| 1177953.688	| 1.383203646 |
+
 
 - suggests that only 1.38% of Wb genomes shared with Cj genome.
 - given I found some genes, mostly mitochodnrial in origin, shared, I would say this demonstrates that
