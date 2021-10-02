@@ -1,6 +1,6 @@
 # Workspace for the Cercopithifilaria johnstoni genome project
 
-Copyright (c) 2021, Stephen R Doyle
+Copyright (c) 2021, Stephen R Doyle  
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
