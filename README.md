@@ -18,5 +18,5 @@ Note: while much effort is made to make all data and code available, some of the
 Copyright (c) 2021, Stephen R Doyle  
 All rights reserved.
 
-This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree.
+This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree.  
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
