@@ -385,7 +385,9 @@ assembly-stats -t *fa | cut -f 1,2,3,9,10
 ## ENA submission
 ### Preparation of FASTQ reads for ENA submission
 - need to convert from FASTQ to CRAM format
+
 ```bash
+
 bsub.py 10 FASTQ2CRAM_1 "java -Xmx20g -jar /nfs/users/nfs_s/sd21/lustre118_link/software/picard-tools-2.5.0/picard.jar FastqToSam \
 FASTQ=Cj3-500-700_S1_L001_R2_001.fastq.gz \
 FASTQ2=Cj3-500-700_S1_L001_R1_001.fastq.gz \
@@ -394,6 +396,7 @@ READ_GROUP_NAME=Cj3-500-700 \
 SAMPLE_NAME=Cj3-500-700"
 
 bsub.py 10 FASTQ2CRAM_1 "samtools view -C -o Cj3-500-700.unaligned.cram Cj3-500-700.unaligned.bam"
+
 ```
 
 
@@ -470,6 +473,7 @@ gffread cercopithifilaria_johnstoni_annotation_SD210906.gff3 -g cercopithifilari
 # Downloaded from NCBI
 
 cat *fasta > wb_genomes.fasta
+
 ```
 
 
@@ -490,7 +494,9 @@ bsub.py 10 kraken "kraken2 \
      --db /lustre/scratch118/infgen/pathogen/pathpipe/kraken2/silva_ssu_nr99_release_132 \
      --report cj_rawreads.kraken2report \
      --paired Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_001.fastq.gz"
+
 ```
+
 - outcome suggests vast majority of reads (98.55%) are unclassified (ie, not in the database), and therefore, likely worm
      - 98.55	24021348	24021348	U	0	unclassified
 
@@ -524,6 +530,7 @@ bsub.py 10 kraken "kraken2 \
 
 ### Mapping Cj proteins to Wolbachia genome collection using exonerate
 - useful way to map protein sequences onto genomes
+
 ```bash
 # run exonerate
 ~sd21/bash_scripts/run_exonerate_splitter GENOMES/wb_genomes.fasta CJ_proteins.fasta
@@ -546,7 +553,9 @@ cut -f9 merged_exonerate.output | cut -f3 -d "=" | sort | uniq | while read -r n
 # used NCBI web blastp to query the sequences - results are below
 
 ```
+
 - where "~sd21/bash_scripts/run_exonerate_splitter" is:
+
 ```bash
 #!/usr/bin/env bash
 # exonerate splitter
@@ -571,7 +580,9 @@ chmod a+x run_split_exonerate_*
 bsub -q normal -n1 -R'span[hosts=1] select[mem>2500] rusage[mem=2500]' -M2500 -J "split_exonerate[1-$n]" -e split_exonerate[1-$n].e -o split_exonerate[1-$n].o ./run_split_
 exonerate_\$LSB_JOBINDEX
 bsub -q normal -n1 -R'span[hosts=1] select[mem>100] rusage[mem=100]' -M100 -w split_exonerate -J "split_exonerate_FIN" "touch FINISHED"
+
 ```
+
 - 18 proteins in total
      - 2 bacterial like - seem enriched in bacterial species rather than nematode species
      - 16 are most components of the mitochondria, and perhaps would be expected to
@@ -602,6 +613,7 @@ bsub -q normal -n1 -R'span[hosts=1] select[mem>100] rusage[mem=100]' -M100 -w sp
 
 ### Promer of Cj genome against Wb genomes
 - finally, want to quantify the sequence similarities between Cj and Wb genomes
+
 ```bash
 # run promer on the genome against Wb genomes.
 bsub.py 10 promer "promer --maxmatch GENOMES/wb_genomes.fasta cercopithifilaria_johnstoni_genome_SD210906.v2.fasta"
@@ -611,7 +623,9 @@ show-coords -THl out.delta > out.coords
 
 # sort hits by wolbachia ID, and the calulate thte total length of those hits and mean ID per Wb genome
 sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
+
 ```
+
 - output , after adding genome ID and genome length, and then calculating proportion of genome in excel
 Genome	 Total_length_hits	Mean_percentage_similarity	genome_size	proportion_genome_hit
 CP041215.1	16116	66.64302632	1449344	1.111951338
@@ -649,11 +663,14 @@ mean	15941.4375	65.052553	1177953.688	1.383203646
 
 ### Repeat model and mask of filarial genomes
 
-```shell
+```bash
 cd /nfs/users/nfs_s/sd21/lustre118_link/kirsty
+
 ```
+
 - get genomes from WBP
-```
+
+```bash
 mkdir genomes
 cd genomes
 
@@ -674,45 +691,56 @@ for i in *.gz; do gunzip ${i}; done
 #--- kirsty sent C.johnstoni via WeTransfer - scp'ed into this dir and called it "CJ.fa"
 
 cd ..
+
 ```
 
 
 - make databases
-```
+
+```bash
 for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
 mkdir ${i}_RM_OUT ; cd ${i}_RM_OUT ; bsub.py 1 01_RM_builddb "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatModeler-open-1.0.11/BuildDatabase -name ${i} ../genomes/${i}.fa"  ; cd .. ;
 done
+
 ```
 
 
 - run modeller
-```
+
+```bash
 for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
-cd ${i}_RM_OUT ; bsub.py --threads 20 10 02_RM_model  "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatModeler-open-1.0.11/RepeatModeler -pa 20 -engine ncbi -database ${i}"; cd .. ;
+     cd ${i}_RM_OUT ; bsub.py --threads 20 10 02_RM_model  "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatModeler-open-1.0.11/RepeatModeler -pa 20 -engine ncbi -database ${i}"; cd .. ;
 done
+
 ```
 
 
 - run masker
-```
+
+```bash
 for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
-cd ${i}_RM_OUT ; bsub.py --threads 7 10 03_RM_mask  "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatMasker/RepeatMasker -e ncbi -pa 7 -s -dir ./ -small -gff -lib RM_*/consensi.fa.classified ../genomes/${i}.fa"; cd .. ;
+     cd ${i}_RM_OUT ; bsub.py --threads 7 10 03_RM_mask  "/nfs/users/nfs_s/sd21/lustre118_link/software/REPEATMASKER/RepeatMasker/RepeatMasker -e ncbi -pa 7 -s -dir ./ -small -gff -lib RM_*/consensi.fa.classified ../genomes/${i}.fa"; cd .. ;
 done
+
 ```
 
 - collate output
-```
+
+```bash
 > summary.data
 for i in $( cd genomes/ ; ls -1 | sed 's/.fa//g' ); do \
-echo ${i} >> summary.data;
-cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e ^"DNA" -e ^"Unclassified" -e ^"Total" -e ^"Simple" -e ^"Low" -e ^"Small" -e ^"Satellites" >> summary.data;
+     echo ${i} >> summary.data;
+     cat ${i}_RM_OUT/${i}.fa.tbl | grep -e ^"base" -e ^"SINE" -e ^"LINE" -e ^"LTR" -e ^"DNA" -e ^"Unclassified" -e ^"Total" -e ^"Simple" -e ^"Low" -e ^"Small" -e ^"Satellites" >> summary.data;
 done
+
 ```
 
 
 ### Comparison of genome assemblies - scaffold length vs cumulative genome size
 -
+
 ```bash
+
 module load seqtk/1.3--ha92aebf_0
 
 cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/SEQ_STATS
@@ -745,16 +773,20 @@ for i in *.seqtk_out; do
 
 cat *.seqtk_out2 > data.seqtk_out
 rm *.seqtk_out2
+
 ```
 
 - make a plot
+
 ```R
+
 library(tidyverse)
 
 data <- read.table("data.seqtk_out", sep="\t")
 data <- data %>% group_by(V3) %>% mutate(csum = cumsum(V5))
 
 ggplot(data, aes(csum, log10(V2), group=V3, colour = V3)) + geom_point()
+
 ```
 
 
@@ -780,7 +812,8 @@ ggplot(data, aes(csum, log10(V2), group=V3, colour = V3)) + geom_point()
 #---------------------------------------------------------------------------------------------------------------------
 
 # 12S-COI phylogeny
-```
+
+```bash
 
 module load raxml-gcc/8.0.19
 
@@ -801,7 +834,8 @@ raxmlHPC -s 20-09-30_12S-COI_alignment_reducedoutgroups_gb.phy -n 20-09-30_12SCO
 #---------------------------------------------------------------------------------------------------------------------
 
 # Circos plot
-```
+
+```bash
 #---Running analysis on the linux system (ASUS) - the HPC not set up properly
 #---run PROMER
 
@@ -831,9 +865,11 @@ module load circos/0.67_5
 circos
 
 ```
+
 ![Chromosome Figure](../04_analysis/CJOV_circos_coloured-by-X.png)
 
-```
+```bash
+
 #---B_malayi and Cjohnstoni circos plot
 
 ./promer --mum --prefix CJv2_BM brugia_malayi.PRJNA10729.WBPS13.genomic.fa /home/kirstmac/Documents/Files/cercopithifilaria_johnstoni-master/02_data/cjohnstoni_genome_200917.fasta
@@ -859,6 +895,7 @@ module load circos/0.67_5
 circos
 
 ```
+
 ![Chromosome Figure](../04_analysis/CJBM_circos_coloured-by-X.png)
 
 
@@ -866,6 +903,7 @@ circos
 #---------------------------------------------------------------------------------------------------------------------
 
 # GC vs Coverage plot
+
 ```bash
 
 #---mapping reads to the updated CJ genome
@@ -925,6 +963,7 @@ samtools dict scaffolds.reduced.fa |\
 
 
 paste GCcontent_201007_new.txt coverage_new_201007.txt cj_ov_promer.complete.hits > NEW_GC_COV_201007.txt
+
 ```
 
 ```R
@@ -946,7 +985,9 @@ SS <- ggplot() + geom_point(data = A,
   labs(y = "Coverage (read depth)", x = "GC content (%)") +
   labs(color = "O_volvulus chromosomes")
 
+
 ```
+
 SS
 ![Chromosome Figure](../04_analysis/GCcov_plot_20-10-08.png)
 
@@ -962,7 +1003,9 @@ LOG <- ggplot() + geom_point(data = A,
   labs(y = "Coverage log10 (read depth)", x = "GC content (%)") +
   labs(color = "O_volvulus chromosomes")
 
+
 ```
+
 LOG
 ![Chromosome Figure](../04_analysis/GCcov_plot_log10_201008.png)
 
@@ -980,6 +1023,7 @@ CHROM <- ggplot() + geom_point(data = A,
   labs(color = "O_volvulus chromosomes")
 
 ```
+
 CHROM
 ![Chromosome Figure](../04_analysis/seperate_plot_chrom_20-10-08.png)
 
@@ -1000,6 +1044,7 @@ CHROM <- ggplot() + geom_point(data = B,
   labs(color = "B_malayi chromosomes")
 
 ```
+
 CHROM
 ![Chromosome Figure](../04_analysis/GCcov_plot_CJBM_20-10-14.png)
 
