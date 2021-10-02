@@ -27,6 +27,7 @@ run_trimmomatic CJ Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_00
 
 ```
 - where "run_trimmomatic" is:
+
 ```bash
 out_prefix=$1
 read_1=$2
@@ -41,6 +42,7 @@ ${out_prefix}.paired_R1.fastq.gz ${out_prefix}.unpaired_R1.fastq.gz \
 ${out_prefix}.paired_R2.fastq.gz ${out_prefix}.unpaired_R2.fastq.gz \
 ILLUMINACLIP:/nfs/users/nfs_s/sd21/databases/trimmomatic_Illumina-adapters.fa:2:30:10 \
 CROP:150 SLIDINGWINDOW:10:20 MINLEN:100
+
 ```
 
 ### Genome Scope
