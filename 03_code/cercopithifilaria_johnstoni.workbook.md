@@ -11,9 +11,9 @@
 
 
 ### Raw reads
-- raw reads were checked using FastQC and MultiQC before analysis
-- this was done at LTU years back, and I don't have the data anymore, but would be easy to regenerate
-- it was clear from this data the drop in sequencing quality beyond 150-200 bp of the long MiSeq reads. While this is acceptible for some applications, it turned out not to be from the initial assemblies produced. Hence, the reads were trimmed quite hard as described below.
+- raw reads were checked using FastQC before analysis
+- this was done at LTU years back (2015?), and I don't have the analysis anymore, but would be easy to regenerate
+- it was clear from this data the drop in sequencing quality beyond 150-200 bp of the long MiSeq reads. While this is acceptable for some applications, it turned out not to be for assembly from the initial assemblies produced. Hence, the reads were trimmed quite hard as described below.
 
 
 ### Trimming
@@ -46,9 +46,8 @@ CROP:150 SLIDINGWINDOW:10:20 MINLEN:100
 ### Genome Scope
 - Genome Scope was used to estimate the genome size from the raw reads
 ```bash
-# un gizip the raw data
-for i in *gz; do
-zcat ${i} > ${i%.gz}; done
+# un gzip the raw data
+gunzip *.gz
 
 # run jellyfish
 jellyfish count -C -m 21 -s 1000000000 -t 10 *.fastq -o reads.jf
