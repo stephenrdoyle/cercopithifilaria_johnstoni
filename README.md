@@ -15,13 +15,8 @@ Note: while much effort is made to make all data and code available, some of the
 
 ******
 ## License
-Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+Copyright (c) 2021, Stephen R Doyle  
+All rights reserved.
 
-This work is licensed under a
-[Creative Commons Attribution 4.0 International License][cc-by].
-
-[![CC BY 4.0][cc-by-image]][cc-by]
-
-[cc-by]: http://creativecommons.org/licenses/by/4.0/
-[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
-[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
+This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree.
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
