@@ -7,7 +7,7 @@ Abstract: "We present a genome assembly and annotation of an individual female *
 
 Authors: Kirsty McCann, Warwick Grant, Stephen R. Doyle
 
-The code for the analysis is available here: [workbook](03_code/cercopithifilaria_johnstoni.workbook.md) 
+The code for the analysis is available here: [workbook](03_code/cercopithifilaria_johnstoni.workbook.md)
 
 Any reuse of data or code is encouraged with due acknowledgement, either via citation of the published manuscript (when available) and/or GitHub repository. Comments, suggestions, and discussion are welcome.
 
@@ -15,4 +15,13 @@ Note: while much effort is made to make all data and code available, some of the
 
 ******
 ## License
-<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
+
+[![CC BY 4.0][cc-by-image]][cc-by]
+
+[cc-by]: http://creativecommons.org/licenses/by/4.0/
+[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
+[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
