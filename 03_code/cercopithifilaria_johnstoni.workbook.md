@@ -29,6 +29,7 @@ run_trimmomatic CJ Cj3-500-700_S1_L001_R1_001.fastq.gz Cj3-500-700_S1_L001_R2_00
 - where "run_trimmomatic" is:
 
 ```bash
+# run_trimmomatic
 out_prefix=$1
 read_1=$2
 read_2=$3
@@ -47,6 +48,7 @@ CROP:150 SLIDINGWINDOW:10:20 MINLEN:100
 
 ### Genome Scope
 - Genome Scope was used to estimate the genome size from the raw reads
+
 ```bash
 # un gzip the raw data
 gunzip *.gz
@@ -62,6 +64,7 @@ jellyfish histo -t 10 reads.jf > reads.histo
 # rerun in genomescope2: http://genomescope.org/genomescope2.0/analysis.php?code=wN4P2Ru51VfnpIQwHcz6
 
 ```
+
 - Genomescope2 output
 
 | property | min | max |
@@ -99,6 +102,7 @@ jellyfish histo -t 10 reads.jf > reads.histo
 
 ### Redundans
 - using redundans first to identifiy and remove excess haplotypic sequneces
+
 ```bash
 # run redundans
 /nfs/users/nfs_s/sd21/lustre118_link/software/GENOME_IMPROVEMENT/redundans/redundans.py --fasta scaffolds.fasta --outdir REDUNDANS_OUT
