@@ -1,5 +1,12 @@
 # Workspace for the Cercopithifilaria johnstoni genome project
 
+Copyright (c) 2021, Stephen R Doyle
+All rights reserved.
+
+This source code is licensed under the BSD-style license found in the
+LICENSE file in the root directory of this source tree.
+
+
 ## Authors:
 - Kirsty McCann (La Trobe University)
 - Stephen Doyle (Wellcome Sanger Institute, ex LTU)
