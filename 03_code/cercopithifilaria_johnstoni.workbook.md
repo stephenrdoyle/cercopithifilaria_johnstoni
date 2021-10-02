@@ -505,26 +505,26 @@ bsub.py 10 kraken "kraken2 \
 
 - Only a fraction of those bacterial hits are classified as wolbachia or wolbachia like. I think this is pretty conclusive that there is no wolbachia present
 
-|     0.03	| 6560	| 104	| C	| 2379 | Alphaproteobacteria
-|     0.02	| 3683	| 0	| O	| 2761 | Rickettsiales
-|     0.01	| 3339	| 3339	| F	| 2805 | Mitochondria
-|     0.00	| 172	| 0	| F	| 2763	          Anaplasmataceae
-|     0.00	| 168	| 168	| G	| 2771	            uncultured
-|     0.00	| 2	| 2	| G	| 2764	            Anaplasma
-|     0.00	| 1	| 1	| G	| 2768	            Ehrlichia
-|     0.00	| 1	| 1	| G	| 2770	            Wolbachia
-|     0.00	| 75	| 75	| F	| 2796	          S25-593
-|     0.00	| 75	| 0	| F	| 26213	          Midichloriaceae
-|     0.00	| 74	| 74	| G	| 26222	            MD3-55
-|     0.00	| 1	| 1	| G	| 26220	            Candidatus Midichloria
-|     0.00	| 13	| 13	| F	| 2801	          SM2D12
-|     0.00	| 6	| 0	| F	| 2781	          Rickettsiaceae
-|     0.00	| 3	| 3	| G	| 2782	            Candidatus Cryptoprodotis
-|     0.00	| 1	| 1	| G	| 2783	            Orientia
-|     0.00	| 1	| 1	| G	| 2785	            uncultured
-|     0.00	| 1	| 1	| G	| 26224	            Ac37b
-|     0.00	| 2	| 2	| F	| 2806	          uncultured
-|     0.00	| 1	| 1	| F	| 26212	          AB1
+|     0.03	| 6560	| 104	| C	| 2379 |	      Alphaproteobacteria
+|     0.02	| 3683	| 0	| O	| 2761 |	        Rickettsiales
+|     0.01	| 3339	| 3339	| F	| 2805 | 	          Mitochondria
+|     0.00	| 172	| 0	| F	| 2763 | 	          Anaplasmataceae
+|     0.00	| 168	| 168	| G	| 2771 | 	            uncultured
+|     0.00	| 2	| 2	| G	| 2764 | 	            Anaplasma
+|     0.00	| 1	| 1	| G	| 2768 | 	            Ehrlichia
+|     0.00	| 1	| 1	| G	| 2770 | 	            Wolbachia
+|     0.00	| 75	| 75	| F	| 2796 | 	          S25-593
+|     0.00	| 75	| 0	| F	| 26213 | 	          Midichloriaceae
+|     0.00	| 74	| 74	| G	| 26222 | 	            MD3-55
+|     0.00	| 1	| 1	| G	| 26220 | 	            Candidatus Midichloria
+|     0.00	| 13	| 13	| F	| 2801 | 	          SM2D12
+|     0.00	| 6	| 0	| F	| 2781 | 	          Rickettsiaceae
+|     0.00	| 3	| 3	| G	| 2782 | 	            Candidatus Cryptoprodotis
+|     0.00	| 1	| 1	| G	| 2783 | 	            Orientia
+|     0.00	| 1	| 1	| G	| 2785 | 	            uncultured
+|     0.00	| 1	| 1	| G	| 26224 | 	            Ac37b
+|     0.00	| 2	| 2	| F	| 2806 | 	          uncultured
+|     0.00	| 1	| 1	| F	| 26212 | 	          AB1
 
 
 
