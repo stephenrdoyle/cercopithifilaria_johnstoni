@@ -247,8 +247,7 @@ sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
 | mean          	| 16114.125         	| 65.0351871                 	| 1177953.69  	| 1.3953069              |   
 
 - data consistent with original analysis
-     - suggests that only 1.4% of Wb genomes shared with Cj genome.
-     - given I found some genes, mostly mitochodnrial in origin, shared, I would say this demonstrates that
+     - suggests that only 1.4% of Wb genomes shared with Cj genome. Original analysis reported 1.38%
      - So, no Wolbachia present.
 
 
