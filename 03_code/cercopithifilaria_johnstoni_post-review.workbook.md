@@ -68,13 +68,15 @@ ggtree(data) +
      geom_tiplab(align=TRUE) +
      geom_nodepoint() +
      geom_nodelab(vjust=-.5, hjust=1.5, size=3) +
-     theme_tree2()
+     theme_tree2() +  ggplot2::xlim(0, 0.8)
+
 
 # save it
-ggsave("mtDNA_phylogeny2.pdf")
+ggsave("mtDNA_phylogeny.pdf")
+ggsave("mtDNA_phylogeny.png")
 ```
 
-![](../04_analysis/mtDNA_phylogeny2.pdf)
+![](../04_analysis/mtDNA_phylogeny2.png)
 
 
 
