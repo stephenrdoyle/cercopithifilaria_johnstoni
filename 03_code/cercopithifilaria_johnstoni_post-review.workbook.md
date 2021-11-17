@@ -186,7 +186,7 @@ data
 | species 	|    mean   	|  std-deviation  	| min  	| max   	|
 |:-------:	|:---------:	|:---------------:	|------	|-------	|
 | OV      	| 1.9846875 	| 2.7516001026675 	| 0.08 	| 13.26 	|
-| CJ      	| 0         	| nan             	| 0    	| 0     	|
+| CJ      	| 0         	| nan             	| 0    	| 0     	|   
 
 - clear Cj has no Wolbachia, and Ov samples have ~2%
 - given Wolbachia genome size of 1 M and O. volvulus genome size of 100 Mb, suggests ~2:1 Wb:nuclear genomes
