@@ -179,12 +179,12 @@ grep -H "Wolbachia$" SRR*.kraken.report | awk '{print "OV",$1,$2}' OFS="\t" > kr
 
 grep -H "Wolbachia$" CJ*report | awk '{print "CJ",$1,$2}' OFS="\t" >> kraken_summary.txt
 
-cat kraken_summary.txt | datamash --group=1 count mean 3 sstdev 3 min 3 max 3
+cat kraken_summary.txt | datamash --group=1 count 3 mean 3 sstdev 3 min 3 max 3
 
 ```
 - output
 
-| species 	|    |    mean   	|  stddev 	| min  	| max   	|
+| species 	| n  |    mean   	|  stddev 	| min  	| max   	|
 |:-------:	|----| :---------:	|:---------------:	|------	|-------	|
 | OV      	| 32 | 1.9846875 	| 2.7516001026675 	| 0.08 	| 13.26 	|
 | CJ      	| 1  | 0         	| nan             	| 0    	| 0     	|   
