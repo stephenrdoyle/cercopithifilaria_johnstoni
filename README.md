@@ -8,6 +8,7 @@ Abstract: "We present a genome assembly and annotation of an individual female *
 Authors: Kirsty McCann, Warwick Grant, Stephen R. Doyle
 
 The code for the analysis is available here: [workbook](03_code/cercopithifilaria_johnstoni.workbook.md)
+The code for the post peer-review analysis is available here: [workbook](03_code/cercopithifilaria_johnstoni_post-review.workbook.md)
 
 Any reuse of data or code is encouraged with due acknowledgement, either via citation of the published manuscript (when available) and/or GitHub repository. Comments, suggestions, and discussion are welcome.
 
