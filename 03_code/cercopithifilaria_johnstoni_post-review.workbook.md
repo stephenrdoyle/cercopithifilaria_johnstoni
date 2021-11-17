@@ -345,6 +345,13 @@ bsub.py --queue long --threads 20 20 braker2 "/lustre/scratch118/infgen/team133/
 bsub.py 10 busco_proteins "/nfs/users/nfs_s/sd21/lustre118_link/software/ASSEMBLY_QC/busco_v3/scripts/run_BUSCO.py --in augustus.aa --out ov_proteins_nematoda --mode proteins --lineage_path /nfs/users/nfs_s/sd21/lustre118_link/databases/busco/nematoda_odb9/ --species caenorhabditis --tarzip --force --long --blast_single_core --tmp_path .tmp --force"
 ```
 
+| Species    	| Original_genes 	| original_BUSCO                        	| donovo_genes 	| denovo_BUSCO                          	|
+|------------	|----------------	|---------------------------------------	|--------------	|---------------------------------------	|
+| A.viteae   	| 10,397         	| C:88.3 [S:86.5, D:1.8], F:8.8, M:2.9 	     | 12473        	| C:92.4 [S:82.6, D:9.8], F:5.6, M:2.0 	|
+| O.volvulus 	| 12,109         	| C:99.2 [S:98.3, D:0.9], F:0.8, M:0.0  	| 12473        	| C:98.8 [S:88.9, D:9.9], F:1.0, M:0.2  	|   
+
+
+
 - A. viteae
      - Genes: original: 10,397, de novo: 12,056
      - BUSCOS: original: C: 88.3 [S:86.5, D:1.8], F:8.8, M:2.9, de novo: C: 92.4 [S:82.6, D:9.8], F:5.6, M:2.0
