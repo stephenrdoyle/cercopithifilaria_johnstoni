@@ -78,14 +78,15 @@ ggsave("mtDNA_phylogeny.png")
 
 ![](../04_analysis/mtDNA_phylogeny.png)
 
+- note: curated the figure in Illustrator, making it a bit more pretty and adding Wolbachia annotation
 
 
 ## Reviewer 1: Q2a
-- 2a. In the search for Wolbachia in C. johnstoni the authors found that 0.02% of reads mapped to Rickettsiales. What is the % of reads from the O. volvulus sequencing project that maps to Rickettsiales? This comparison is necessary as this report will be cited as evidence of Wolbachia loss.
+- 2a. In the search for Wolbachia in *C. johnstoni* the authors found that 0.02% of reads mapped to Rickettsiales. What is the % of reads from the *O. volvulus* sequencing project that maps to Rickettsiales? This comparison is necessary as this report will be cited as evidence of Wolbachia loss.
 
 - Response
-     - need to run kraken on some O. volvulus samples
-     - at the sampe time, need to check how sensitive kraken is to detecting Wolbachia if it is in fact there. The 0 Wb in Cj could simply be becasue kraken is not picking it up, not that it is in fact absent
+     - need to run kraken on some *O. volvulus* samples
+     - at the same time, need to check how sensitive kraken is to detecting Wolbachia if it is in fact there. The 0 Wb in Cj could simply be becasue kraken is not picking it up, not that it is in fact absent
      - NOTE: some playing about found that the default kraken wasnt that sensitive, which may simply be because the Wolbachia genome in the kraken database is probably a non-filarial species.
      - To fix this, need to add filarial wolbachia to the kraken database.
 
