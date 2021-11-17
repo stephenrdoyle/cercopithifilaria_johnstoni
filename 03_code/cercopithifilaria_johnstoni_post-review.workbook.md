@@ -179,15 +179,15 @@ grep -H "Wolbachia$" SRR*.kraken.report | awk '{print "OV",$1,$2}' OFS="\t" > kr
 
 grep -H "Wolbachia$" CJ*report | awk '{print "CJ",$1,$2}' OFS="\t" >> kraken_summary.txt
 
-data
+cat kraken_summary.txt | datamash --group=1 count mean 3 sstdev 3 min 3 max 3
 
 ```
 - output
-   
-| species 	|    mean   	|  stddev 	| min  	| max   	|
-|:-------:	|:---------:	|:---------------:	|------	|-------	|
-| OV      	| 1.9846875 	| 2.7516001026675 	| 0.08 	| 13.26 	|
-| CJ      	| 0         	| nan             	| 0    	| 0     	|   
+
+| species 	|    |    mean   	|  stddev 	| min  	| max   	|
+|:-------:	|----| :---------:	|:---------------:	|------	|-------	|
+| OV      	| 32 | 1.9846875 	| 2.7516001026675 	| 0.08 	| 13.26 	|
+| CJ      	| 1  | 0         	| nan             	| 0    	| 0     	|   
 
 - clear Cj has no Wolbachia, and Ov samples have ~2%
 - given Wolbachia genome size of 1 M and O. volvulus genome size of 100 Mb, suggests ~2:1 Wb:nuclear genomes
