@@ -76,7 +76,7 @@ ggsave("mtDNA_phylogeny.pdf")
 ggsave("mtDNA_phylogeny.png")
 ```
 
-![](../04_analysis/mtDNA_phylogeny2.png)
+![](../04_analysis/mtDNA_phylogeny.png)
 
 
 
