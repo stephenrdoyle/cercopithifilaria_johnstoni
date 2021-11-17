@@ -182,7 +182,7 @@ grep -H "Wolbachia$" CJ*report | awk '{print "CJ",$1,$2}' OFS="\t" >> kraken_sum
 data
 
 ```
-- output
+- output   
 | species 	|    mean   	|  std-deviation  	| min  	| max   	|
 |:-------:	|:---------:	|:---------------:	|------	|-------	|
 | OV      	| 1.9846875 	| 2.7516001026675 	| 0.08 	| 13.26 	|
