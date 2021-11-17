@@ -1,5 +1,14 @@
 
-# Post Peer Review updates
+# Cercopithifilaria johnstoni genome project: Post Peer Review updates
+
+Copyright (c) 2021, Stephen R Doyle
+All rights reserved.
+
+This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree.
+
+## Authors:
+- Stephen Doyle (Wellcome Sanger Institute, ex LTU)
+
 
 ## Reviewer 1: Q1
 - 1. It would be helpful to know the phylogenetic placement of C. johnstoni in the filarial nematodes from this paper. Perhaps Table 1 could include the phylogenetic relationships.
@@ -64,6 +73,9 @@ ggtree(data) +
 # save it
 ggsave("mtDNA_phylogeny2.pdf")
 ```
+
+![](../04_analysis/mtDNA_phylogeny2.pdf)
+
 
 
 ## Reviewer 1: Q2a
