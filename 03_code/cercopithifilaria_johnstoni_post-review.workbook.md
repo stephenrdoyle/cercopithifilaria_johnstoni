@@ -192,8 +192,65 @@ cat kraken_summary.txt | datamash --group=1 count 3 mean 3 sstdev 3 min 3 max 3
 - clear Cj has no Wolbachia, and Ov samples have ~2%
 - given Wolbachia genome size of 1 M and O. volvulus genome size of 100 Mb, suggests ~2:1 Wb:nuclear genomes
 
+
 ## Reviewer 1: Q2b
 - 2b. For the other Wolbachia searches, it is unclear to me if the authors used the assembled contigs before or after blobtools decontamination. If after, it is not surprising that there is so little evidence of matches.
+
+- Response     
+     - good pickup - I did it with the curated genome post-blobtools, and so need to rerun.
+
+
+### Promer of Cj genome against Wb genomes
+- finally, want to quantify the sequence similarities between Cj and Wb genomes
+
+```bash
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/POST_PEER_REVIEW/PROMER
+
+# spades scaffolds
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/scaffolds.fasta
+
+# wolbachia genomes
+ln -s /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/WOLBACHIA/GENOMES/wb_genomes.fasta
+
+
+# run promer on the genome against Wb genomes.
+bsub.py 10 promer "promer --maxmatch wb_genomes.fasta scaffolds.fasta"
+
+# extract the coordinates
+show-coords -THl out.delta > out.coords
+
+# sort hits by wolbachia ID, and the calulate thte total length of those hits and mean ID per Wb genome
+sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
+
+```
+
+- output , after adding genome ID and genome length, and then calculating proportion of genome in excel  
+
+| Genome        	| Total_length_hits 	| Mean_percentage_similarity 	| genome_size 	| proportion_genome_hit 	|
+|---------------	|-------------------	|----------------------------	|-------------	|-----------------------	|
+| CP041215.1    	| 16878             	| 66.2962025                 	| 1449344     	| 1.16452685            	|
+| CP046577.1    	| 15879             	| 64.4986765                 	| 1045802     	| 1.51835625            	|
+| CP046578.1    	| 14952             	| 65.5870588                 	| 920122      	| 1.6250019             	|
+| CP046579.1    	| 11481             	| 66.31                      	| 863988      	| 1.3288379             	|
+| CP046580.1    	| 12909             	| 65.6507018                 	| 863427      	| 1.49508876            	|
+| NC_002978.6   	| 16056             	| 66.2507042                 	| 1267782     	| 1.26646379            	|
+| NC_006833.1   	| 15480             	| 64.7777941                 	| 1080084     	| 1.43322186            	|
+| NC_010981.1   	| 16851             	| 65.3215                    	| 1482455     	| 1.13669555            	|
+| NC_018267.1   	| 14892             	| 64.732                     	| 957990      	| 1.55450474            	|
+| NZ_AP013028.1 	| 20385             	| 63.9284783                 	| 1250060     	| 1.63072173            	|
+| NZ_CM003641.1 	| 16542             	| 63.5532877                 	| 1133809     	| 1.45897589            	|
+| NZ_CP015510.2 	| 22554             	| 63.136055                  	| 1801626     	| 1.25186914            	|
+| NZ_CP050521.1 	| 15126             	| 64.8389552                 	| 1072967     	| 1.40973581            	|
+| NZ_CP051156.1 	| 14688             	| 67.2610294                 	| 1495538     	| 0.98212148            	|
+| NZ_CP051157.1 	| 18315             	| 63.6974074                 	| 1201647     	| 1.52415809            	|
+| NZ_HG810405.1 	| 14838             	| 64.7231429                 	| 960618      	| 1.54463064            	|
+| mean          	| 16114.125         	| 65.0351871                 	| 1177953.69  	| 1.3953069              |   
+
+- data consistent with original analysis
+     - suggests that only 1.4% of Wb genomes shared with Cj genome.
+     - given I found some genes, mostly mitochodnrial in origin, shared, I would say this demonstrates that
+     - So, no Wolbachia present.
+
 
 
 
