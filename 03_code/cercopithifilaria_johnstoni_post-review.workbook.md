@@ -46,10 +46,10 @@ cat *fa > mtDNA_genomes.fa
 bsub.py 10 mafft "/nfs/users/nfs_s/sd21/lustre118_link/software/anaconda2/bin/mafft  --globalpair --maxiterate 16 --reorder mtDNA_genomes.fa \> mtDNA_genomes.aln"
 
 # run iqtree to generate a ML phylogeny
-bsub.py 10 iqtree "iqtree2 -s mtDNA_genomes.aln -B 1000 -o s.digitata_NC_014282.1,t.callipaeda_NC_018363.1,g.pulchrum_NC_026687.1,s.lupi_NC_021135.1 -redo"
+bsub.py --done mafft 10 iqtree "iqtree2 -s mtDNA_genomes.aln -B 1000 -o g.pulchrum_NC_026687.1,s.lupi_NC_021135.1 -redo"
 
-# run iqtree to generate a ML phylogeny
-bsub.py 10 iqtree-gb "iqtree2 -s mtDNA_genomes.aln-gb -B 1000 -o s.digitata_NC_014282.1,t.callipaeda_NC_018363.1,g.pulchrum_NC_026687.1,s.lupi_NC_021135.1 -redo"
+bsub.py --done mafft 10 iqtree-gb "iqtree2 -s mtDNA_genomes.aln-gb -B 1000 -o g.pulchrum_NC_026687.1,s.lupi_NC_021135.1 -redo"
+
 ```
 
 ```R
@@ -61,7 +61,7 @@ library(ape)
 data <- ggtree::read.tree("mtDNA_genomes.aln.treefile")
 
 # reroot tree
-data <- root(data,19)
+data <- root(data,18)
 
 # make tree
 ggtree(data) +
