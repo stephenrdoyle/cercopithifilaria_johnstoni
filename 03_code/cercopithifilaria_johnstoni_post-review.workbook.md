@@ -263,7 +263,36 @@ sort -k14 out.coords | datamash groupby 14 sum 5 mean 7
 ## Reviewer 3: Q1
 - I was surprised to see genome completeness scores over 94% with an assembly using only short-read sequence data. Could this relate to short introns with less repetitive elements?
 - Response
-     - just a comment
+     - Mostly a comment.
+     - did decide to calculate intro lengths from C.johntoni and O.volvulus, just becasue it was mentioned. However, I dont think much can be said about it.
+
+```
+cd /nfs/users/nfs_s/sd21/lustre118_link/cercopithifilaria_johnstoni/FINAL_GENOME/INTRON_STATS
+
+# Ov
+wget ftp://ftp.wormbase.org/pub/wormbase/releases/WS282/species/o_volvulus/PRJEB513/o_volvulus.PRJEB513.WS282.annotations.gff3.gz
+gunzip o_volvulus.PRJEB513.WS282.annotations.gff3.gz
+
+grep "intron" o_volvulus.PRJEB513.WS282.annotations.gff3 | grep "WormBase" > ov.introns.gff
+
+cut -f1,4,5  ov.introns.gff | sort | uniq | awk '{print "OV",$3-$2}' OFS="\t" > intron.lengths.txt
+
+
+# Cj
+gt stat -addintrons -intronlengthdistri -o cj.gt-stats.out cercopithifilaria_johnstoni_annotation_SD210906.gff3
+
+grep "cumulative" cj.gt-stats.out | sed 's/://g' | awk '{print $1,$2}' | while read length count; do for (( c=1; c<=$count; c++)) ; do echo -e "CJ\t$length" ; done ; done >> intron.lengths.txt
+
+echo -e "Species\tmean\tstdev\tmedian\tq1\tq3"; cat intron.lengths.txt | datamash groupby 1 mean 2 sstdev 2 median 2 q1 2 q3 2
+
+```
+| Species 	| count 	| mean            	| stdev           	| median 	| q1  	| q3  	|
+|---------	|-------	|-----------------	|-----------------	|--------	|-----	|-----	|
+| OV      	| 93854 	| 435.95694376372 	| 2311.651899209  	| 257    	| 155 	| 409 	|
+| CJ      	| 97658 	| 299.05559196379 	| 298.73046580956 	| 229    	| 143 	| 350 	|   
+
+- suggests that Cj introns are shorter.
+- not quite clear is this is due to genome quality or biological differences. 
 
 
 ## Reviewer 3: Q2
